@@ -9,7 +9,7 @@ import { useCallback, useState } from 'react';
 // 🧩 Componentes
 import Message from './components/flashMessage/Message';
 import Header from './components/header/Header';
-import Footer from './components/footer/footer';
+import Footer from './components/footer/Footer';
 import Sidebar from './components/sidebar/Sidebar';
 import Container from './components/layout/Container';
 // 📄 Páginas
