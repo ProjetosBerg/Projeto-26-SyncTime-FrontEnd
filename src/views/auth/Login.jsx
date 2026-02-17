@@ -11,7 +11,7 @@ import styles from './Login.module.css';
 import Button from '../../components/button/Button';
 
 // 🖼️ Assets
-import Logo from '../../assets/logo.svg';
+import Logo from '../../assets/Logo.svg';
 
 // 🌐 Contexto
 import { Context } from '../../context/UserContext';
