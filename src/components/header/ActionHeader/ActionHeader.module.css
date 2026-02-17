@@ -1,0 +1,50 @@
+.actionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-radius: 8px;
+}
+
+.backButton {
+ background-color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: -12px;
+}
+
+.backButton:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.backButton:active {
+  transform: translateX(-4px);
+}
+
+.createButton {
+  background-color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: -12px;
+
+}
+
+.createButton:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.createButton:active {
+  transform: translateY(0);
+}

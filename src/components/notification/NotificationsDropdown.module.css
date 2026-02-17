@@ -1,0 +1,911 @@
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Backdrop */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 480px;
+  max-width: calc(100vw - 1rem);
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  z-index: 50;
+  overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.dropdown.dark {
+  background-color: #1f1f1f;
+  border: 1px solid #3a3a3a;
+}
+
+.dropdown.light {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+}
+
+/* Mobile: Full screen dropdown */
+@media (max-width: 640px) {
+  .dropdown {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Dropdown Header */
+.dropdownHeader {
+  /* background removido - será aplicado via inline style */
+  padding: 1rem;
+}
+
+.dropdownHeaderInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dropdownHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdownBellIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: white;
+}
+
+.dropdownTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: white;
+}
+
+.closeButton {
+  padding: 0.25rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.closeIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: white;
+}
+
+.dropdownSubtitle {
+  color: #c7d2fe;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Mobile: Add safe area padding */
+@media (max-width: 640px) {
+  .dropdownHeader {
+    padding: 1rem;
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .dropdownTitle {
+    font-size: 1rem;
+  }
+}
+
+/* Filters Container */
+.filtersContainer {
+  padding: 0.75rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.dropdown.dark .filtersContainer {
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.dropdown.light .filtersContainer {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.filtersInner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .filtersContainer {
+    padding: 0.5rem;
+  }
+  
+  .filtersInner {
+    gap: 0.375rem;
+  }
+}
+
+/* Status Filter */
+.statusFilter {
+  display: flex;
+  border-radius: 0.5rem;
+  padding: 0.125rem;
+  gap: 0.125rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  flex: 1;
+  min-width: 0;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown.dark .statusFilter {
+  background-color: #1a1a1a;
+}
+
+.dropdown.light .statusFilter {
+  background-color: white;
+}
+
+.filterButton {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.dropdown.dark .filterButton {
+  color: #9ca3af;
+}
+
+.dropdown.dark .filterButton:hover {
+  color: #e5e7eb;
+}
+
+.dropdown.light .filterButton {
+  color: #4b5563;
+}
+
+.dropdown.light .filterButton:hover {
+  color: #111827;
+}
+
+.filterButtonActive {
+  /* backgroundColor removido - será aplicado via inline style */
+  color: white !important;
+}
+
+.filterBadge {
+  margin-left: 0.25rem;
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown.dark .filterBadge {
+  background-color: #3a3a3a;
+}
+
+.dropdown.light .filterBadge {
+  background-color: #f3f4f6;
+}
+
+.filterBadgeActive {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.filterBadgeUnread {
+  background-color: #e0e7ff !important;
+  color: #6366f1;
+}
+
+/* Mobile: Smaller buttons */
+@media (max-width: 640px) {
+  .filterButton {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+    gap: 0.125rem;
+  }
+  
+  .filterBadge {
+    font-size: 0.5625rem;
+    padding: 0.0625rem 0.25rem;
+    margin-left: 0.125rem;
+  }
+}
+
+/* Type Filter */
+.typeFilterWrapper {
+  position: relative;
+  margin-left: auto;
+}
+
+.typeFilterButton {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+}
+
+.dropdown.dark .typeFilterButton {
+  background-color: #1a1a1a;
+  color: #e5e7eb;
+}
+
+.dropdown.dark .typeFilterButton:hover {
+  background-color: #2a2a2a;
+}
+
+.dropdown.light .typeFilterButton {
+  background-color: white;
+  color: #374151;
+}
+
+.dropdown.light .typeFilterButton:hover {
+  background-color: #f9fafb;
+}
+
+.filterIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.typeFilterDropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 0.25rem;
+  width: 11rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.dropdown.dark .typeFilterDropdown {
+  background-color: #1a1a1a;
+  border: 1px solid #3a3a3a;
+}
+
+.dropdown.light .typeFilterDropdown {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+}
+
+/* Mobile: Full width dropdown */
+@media (max-width: 640px) {
+  .typeFilterButton {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+    gap: 0.25rem;
+  }
+  
+  .filterIcon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+  
+  .typeFilterDropdown {
+    position: fixed;
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    max-width: none;
+  }
+}
+
+.typeFilterOption {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dropdown.dark .typeFilterOption {
+  color: #e5e7eb;
+}
+
+.dropdown.dark .typeFilterOption:hover {
+  background-color: #2a2a2a;
+}
+
+.dropdown.light .typeFilterOption {
+  color: #374151;
+}
+
+.dropdown.light .typeFilterOption:hover {
+  background-color: #f9fafb;
+}
+
+.typeFilterOptionActive {
+  background-color: #eef2ff !important;
+  color: #6366f1 !important;
+}
+
+.checkIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Clear Button */
+.clearButton {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background-color: #fef2f2;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #dc2626;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+}
+
+.clearButton:hover {
+  background-color: #fee2e2;
+}
+
+.trashIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Mobile: Smaller button */
+@media (max-width: 640px) {
+  .clearButton {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+    gap: 0.25rem;
+  }
+  
+  .trashIcon {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+}
+
+/* Notifications List */
+.notificationsList {
+  max-height: 400px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Mobile: Fill available space */
+@media (max-width: 640px) {
+  .notificationsList {
+    max-height: none;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.notificationsItems {
+  transition: border-color 0.3s ease;
+}
+
+.dropdown.dark .notificationsItems {
+  border-top: 1px solid #3a3a3a;
+}
+
+.dropdown.light .notificationsItems {
+  border-top: 1px solid #f3f4f6;
+}
+
+.notificationItem {
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.dropdown.dark .notificationItem {
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.dropdown.light .notificationItem {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dropdown.dark .notificationItem:hover {
+  background-color: #2a2a2a;
+}
+
+.dropdown.light .notificationItem:hover {
+  background-color: #f9fafb;
+}
+
+.notificationItemUnread {
+  background-color: rgba(238, 242, 255, 0.3);
+}
+
+.dropdown.dark .notificationItemUnread {
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.notificationItemInner {
+  display: flex;
+  align-items: start;
+  gap: 0.75rem;
+}
+
+/* Indicator */
+.indicatorWrapper {
+  flex-shrink: 0;
+  padding-top: 0.375rem;
+}
+
+.indicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+}
+
+.indicatorUnread {
+  /* backgroundColor removido - será aplicado via inline style */
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.indicatorRead {
+  background-color: #d1d5db;
+}
+
+.dropdown.dark .indicatorRead {
+  background-color: #4b5563;
+}
+
+/* Notification Content */
+.notificationContent {
+  flex: 1;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.notificationText {
+  font-size: 0.875rem;
+  margin-bottom: 0.375rem;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+.dropdown.dark .notificationText {
+  color: #9ca3af;
+}
+
+.dropdown.light .notificationText {
+  color: #374151;
+}
+
+.notificationTextUnread {
+  font-weight: 600;
+}
+
+.dropdown.dark .notificationTextUnread {
+  color: #e5e7eb;
+}
+
+.dropdown.light .notificationTextUnread {
+  color: #111827;
+}
+
+.notificationMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Mobile: Smaller text */
+@media (max-width: 640px) {
+  .notificationText {
+    font-size: 0.8125rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .notificationMeta {
+    gap: 0.375rem;
+  }
+}
+
+.typeBadge {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.typeRelatorio {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+}
+
+.typeAnotacao {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.typeUsuario {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.typeDefault {
+  transition: all 0.3s ease;
+}
+
+.dropdown.dark .typeDefault {
+  background-color: #3a3a3a;
+  color: #9ca3af;
+}
+
+.dropdown.light .typeDefault {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.actionBadge {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.actionCriacao {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.actionAtualizacao {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.actionExclusao {
+  background-color: #fecaca;
+  color: #dc2626;
+}
+
+.actionExportacao {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+.actionDefault {
+  transition: all 0.3s ease;
+}
+
+.dropdown.dark .actionDefault {
+  background-color: #3a3a3a;
+  color: #9ca3af;
+}
+
+.dropdown.light .actionDefault {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.notificationTime {
+  font-size: 0.625rem;
+  transition: color 0.3s ease;
+}
+
+.dropdown.dark .notificationTime {
+  color: #6b7280;
+}
+
+.dropdown.light .notificationTime {
+  color: #6b7280;
+}
+
+/* Action Buttons */
+.actionButtons {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.notificationItem:hover .actionButtons {
+  opacity: 1;
+}
+
+/* Action Button (Navigate) */
+.actionButton {
+  padding: 0.375rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown.dark .actionButton {
+  color: #6b7280;
+}
+
+.dropdown.light .actionButton {
+  color: #9ca3af;
+}
+
+.actionButton:hover {
+  color: #6366f1 !important;
+  background-color: #eef2ff !important;
+}
+
+.externalIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Delete Button */
+.deleteButton {
+  padding: 0.375rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+.dropdown.dark .deleteButton {
+  color: #6b7280;
+}
+
+.dropdown.light .deleteButton {
+  color: #9ca3af;
+}
+
+.deleteButton:hover {
+  color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+}
+
+.trashIconSmall {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Mobile: Always visible */
+@media (max-width: 640px) {
+  .actionButtons {
+    opacity: 1;
+  }
+  
+  .actionButton,
+  .deleteButton {
+    padding: 0.5rem;
+  }
+  
+  .externalIcon,
+  .trashIconSmall {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+/* Empty State */
+.emptyState {
+  padding: 2rem;
+  text-align: center;
+}
+
+.emptyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  margin-bottom: 0.75rem;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown.dark .emptyIcon {
+  background-color: #2a2a2a;
+}
+
+.dropdown.light .emptyIcon {
+  background-color: #f3f4f6 
+}
+
+
+.emptyBellIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.dropdown.dark .emptyBellIcon {
+  color: #6b7280;
+}
+
+.dropdown.light .emptyBellIcon {
+  color: #9ca3af;
+}
+
+.emptyTitle {
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: color 0.3s ease;
+}
+
+.dropdown.dark .emptyTitle {
+  color: #9ca3af;
+}
+
+.dropdown.light .emptyTitle {
+  color: #6b7280;
+}
+
+.emptySubtitle {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  transition: color 0.3s ease;
+}
+
+.dropdown.dark .emptySubtitle {
+  color: #6b7280;
+}
+
+.dropdown.light .emptySubtitle {
+  color: #9ca3af;
+}
+
+/* Footer */
+.footer {
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.dropdown.dark .footer {
+  background-color: #2a2a2a;
+  border-top: 1px solid #3a3a3a;
+}
+
+.dropdown.light .footer {
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.footerStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.footerStat {
+  /* Base styles for stat container */
+}
+
+.footerStatLabel {
+  font-size: 0.625rem;
+  transition: color 0.3s ease;
+}
+
+.dropdown.dark .footerStatLabel {
+  color: #9ca3af;
+}
+
+.dropdown.light .footerStatLabel {
+  color: #6b7280;
+}
+
+.footerStatValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+  transition: color 0.3s ease;
+}
+
+.dropdown.dark .footerStatValue {
+  color: #e5e7eb;
+}
+
+.dropdown.light .footerStatValue {
+  color: #111827;
+}
+
+.footerStatValueUnread {
+  font-size: 1.125rem;
+  font-weight: 700;
+  /* color removido - será aplicado via inline style */
+}
+
+.footerStatValueRead {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+/* Mobile: Add safe area padding and smaller text */
+@media (max-width: 640px) {
+  .footer {
+    padding: 0.75rem;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+  
+  .footerStatLabel {
+    font-size: 0.5625rem;
+  }
+  
+  .footerStatValue,
+  .footerStatValueUnread,
+  .footerStatValueRead {
+    font-size: 1rem;
+  }
+
+  .typeBadge,
+  .actionBadge {
+    font-size: 0.5625rem;
+    padding: 0.0625rem 0.375rem;
+  }
+}

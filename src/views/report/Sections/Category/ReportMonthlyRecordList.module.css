@@ -1,0 +1,407 @@
+/* ReportMonthlyRecordList.module.css */
+
+.container {
+  padding: 24px;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Tema claro (padrão com fallback) */
+.container.light {
+  background-color: var(--bg-primary, #ffffff);
+  color: var(--text-primary, #1f2937);
+}
+
+/* Tema escuro */
+.container.dark {
+  background-color: var(--bg-primary, #0f172a);
+  color: var(--text-primary, #f1f5f9);
+}
+
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nameCell .title {
+  font-weight: 500;
+  color: var(--text-primary, #1f2937);
+}
+
+.nameCell .subtitle {
+  font-size: 14px;
+  color: var(--text-secondary, #6b7280);
+}
+
+.container.dark .nameCell .title {
+  color: var(--text-primary, #f1f5f9);
+}
+
+.container.dark .nameCell .subtitle {
+  color: var(--text-secondary, #94a3b8);
+}
+
+/* ========== NOVOS ESTILOS DE STATUS ========== */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Status: Em Andamento */
+.status-em_andamento {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #2563eb;
+}
+
+.status-em_andamento .statusDot {
+  background-color: #2563eb;
+  box-shadow: 0 0 6px rgba(37, 99, 235, 0.5);
+}
+
+/* Status: Concluído */
+.status-concluido {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #059669;
+}
+
+.status-concluido .statusDot {
+  background-color: #059669;
+  box-shadow: 0 0 6px rgba(5, 150, 105, 0.5);
+}
+
+/* Status: Cancelado */
+.status-cancelado {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.status-cancelado .statusDot {
+  background-color: #dc2626;
+  box-shadow: 0 0 6px rgba(220, 38, 38, 0.5);
+}
+
+/* Status: Pendente */
+.status-pendente {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.status-pendente .statusDot {
+  background-color: #d97706;
+  box-shadow: 0 0 6px rgba(217, 119, 6, 0.5);
+}
+
+/* Status: Pausado */
+.status-pausado {
+  background-color: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+}
+
+.status-pausado .statusDot {
+  background-color: #6b7280;
+  box-shadow: 0 0 6px rgba(107, 114, 128, 0.5);
+}
+
+/* TEMA ESCURO - Status Badges */
+.container.dark .status-em_andamento {
+  background-color: rgba(59, 130, 246, 0.25);
+  color: #60a5fa;
+}
+
+.container.dark .status-concluido {
+  background-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+.container.dark .status-cancelado {
+  background-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.container.dark .status-pendente {
+  background-color: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.container.dark .status-pausado {
+  background-color: rgba(107, 114, 128, 0.25);
+  color: #9ca3af;
+}
+
+/* ========== FIM DOS NOVOS ESTILOS DE STATUS ========== */
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #10b981;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.userName {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.userRole {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.profileBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #10b981;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e5e7eb;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #ec4899;
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+.container.dark .slider {
+  background-color: #475569;
+}
+
+.actionsCell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.editButton {
+  padding: 8px;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.editButton:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+.deleteButton {
+  padding: 8px;
+  background-color: #ef4444;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.deleteButton:hover {
+  background-color: #dc2626;
+}
+
+/* Estado vazio melhorado */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 48px 24px;
+  border-radius: 16px;
+  border: 2px dashed #cbd5e1;
+  margin: 24px 0;
+  animation: fadeIn 0.5s ease-in;
+}
+
+/* Tema claro para emptyState */
+.emptyState.light {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-color: #cbd5e1;
+}
+
+.emptyState.light p {
+  color: #475569;
+}
+
+.emptyState.light .emptyStateSubtitle {
+  color: #64748b;
+}
+
+/* Tema escuro para emptyState */
+.emptyState.dark {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-color: #475569;
+}
+
+.emptyState.dark p {
+  color: #e2e8f0;
+}
+
+.emptyState.dark .emptyStateSubtitle {
+  color: #94a3b8;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.emptyStateIcon {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.emptyStateIcon svg {
+  width: 60px;
+  height: 60px;
+  color: white;
+  stroke-width: 2;
+}
+
+.emptyState p {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.emptyStateSubtitle {
+  font-size: 14px;
+  margin-bottom: 32px;
+  text-align: center;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.emptyStateButton {
+  padding: 14px 32px;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.emptyStateButton:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.emptyStateButton:active {
+  transform: translateY(0);
+}
+
+.emptyStateButton svg {
+  width: 20px;
+  height: 20px;
+}

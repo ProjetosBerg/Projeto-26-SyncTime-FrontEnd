@@ -1,0 +1,261 @@
+/* Header Container */
+.header {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Brand */
+.brand {
+  width: 0; 
+}
+
+/* Actions Container */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Streak Container */
+.streakContainer {
+  display: flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.25rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+}
+
+.streakContainer:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.flameIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.streakContainer:hover .flameIcon {
+  transform: scale(1.15) rotate(-10deg);
+}
+
+.streakButton {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.streakButton:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 2px;
+}
+
+.streakNumber {
+  color: white;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.025em;
+}
+
+.streakText {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.875rem;
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .streakText {
+    display: block;
+  }
+  
+  .flameIcon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}
+
+/* Notifications */
+.notificationWrapper {
+  position: relative;
+}
+
+.notificationButton {
+  position: relative;
+  padding: 0.625rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+}
+
+.notificationButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bellIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+.notificationButton:hover .bellIcon {
+  transform: scale(1.1);
+}
+
+.badge {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  background: #fbbf24;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 9999px;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 0.75rem;
+  width: 20rem;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  z-index: 50;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownHeader {
+  padding: 0.75rem 1rem;
+}
+
+.dropdownTitle {
+  color: white;
+  font-weight: 600;
+  margin: 0;
+}
+
+.dropdownContent {
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.notificationItem {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notificationItem:hover {
+  background-color: #f9fafb;
+}
+
+.notificationText {
+  color: #1f2937;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0 0 0.25rem 0;
+}
+
+.notificationTime {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.dropdownFooter {
+  padding: 0.75rem 1rem;
+  background-color: #f9fafb;
+  text-align: center;
+}
+
+.viewAllButton {
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.viewAllButton:hover {
+  opacity: 0.8;
+}
+
+/* User Profile */
+.profileContainer {
+  display: flex;
+  align-items: center;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profileContainer:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.profileContainer:hover .avatar {
+  transform: scale(1.05);
+}

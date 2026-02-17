@@ -1,0 +1,406 @@
+/* Streak Button */
+.streakButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.streakButton:hover {
+  background-color: #f3f4f6;
+}
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Content */
+.modalContent {
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 28rem;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalContent.dark {
+  background: #1f2937;
+  border: 1px solid #374151;
+}
+
+.modalContent.light {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.modalContent.dark .closeButton {
+  color: white;
+}
+
+.modalContent.dark .closeButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.modalContent.light .closeButton {
+  color: #4b5563;
+}
+
+.modalContent.light .closeButton:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.closeIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.modalBody {
+  padding: 2rem;
+}
+
+/* Title */
+.titleContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: bold;
+  margin: 0;
+  flex: 1;
+  transition: color 0.3s ease;
+}
+
+.modalContent.dark .title {
+  color: white;
+}
+
+.modalContent.light .title {
+  color: #111827;
+}
+
+.titleFlame {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 6px rgba(253, 224, 71, 0.3));
+  transition: transform 0.3s ease;
+}
+
+.titleFlame:hover {
+  transform: scale(1.1);
+}
+
+.rankButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalContent.dark .rankButton:hover {
+  background-color: rgba(251, 146, 60, 0.1);
+}
+
+.modalContent.light .rankButton:hover {
+  background-color: rgba(251, 146, 60, 0.1);
+}
+
+.podiumIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: #fb923c;
+  filter: drop-shadow(0 2px 4px rgba(251, 146, 60, 0.3));
+  transition: all 0.3s ease;
+}
+
+.rankButton:hover .podiumIcon {
+  transform: scale(1.15) translateY(-2px);
+  filter: drop-shadow(0 4px 8px rgba(251, 146, 60, 0.5));
+}
+
+/* Subtitle */
+.subtitle {
+  font-size: 1.125rem;
+  margin: 0 0 2rem 0;
+  transition: color 0.3s ease;
+}
+
+.modalContent.dark .subtitle {
+  color: #e5e7eb;
+}
+
+.modalContent.light .subtitle {
+  color: #4b5563;
+}
+
+/* Calendar */
+.calendar {
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.modalContent.dark .calendar {
+  background-color: rgba(17, 24, 39, 0.6);
+}
+
+.modalContent.light .calendar {
+  background-color: rgba(243, 244, 246, 0.8);
+}
+
+.weekDays {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.dayColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.day {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.modalContent.dark .day {
+  color: #9ca3af;
+}
+
+.modalContent.light .day {
+  color: #6b7280;
+}
+
+.dayActive {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fb923c;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 10px rgba(251, 146, 60, 0.3);
+}
+
+/* Progress Bar */
+.progressBar {
+  position: relative;
+  height: 2rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+.modalContent.dark .progressBar {
+  background-color: #374151;
+}
+
+.modalContent.light .progressBar {
+  background-color: #d1d5db;
+}
+
+.progressFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(to right, #facc15, #fb923c);
+  border-radius: 9999px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 20px rgba(251, 146, 60, 0.4);
+}
+
+/* Day Indicators */
+.dayIndicators {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.5rem;
+}
+
+.dayCompleted,
+.dayCurrent,
+.dayIncomplete {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.dayCompleted {
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(249, 115, 22, 0.2);
+  transform: scale(1);
+}
+
+.dayCompleted:hover {
+  transform: scale(1.15);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(249, 115, 22, 0.3);
+}
+
+.modalContent.light .dayCompleted {
+  background-color: #ffffff;
+}
+
+.dayCurrent {
+  background-color: white;
+  border: 3px solid #fb923c;
+  box-shadow: 0 4px 8px rgba(251, 146, 60, 0.3), 0 0 20px rgba(251, 146, 60, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 8px rgba(251, 146, 60, 0.3), 0 0 20px rgba(251, 146, 60, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(251, 146, 60, 0.4), 0 0 30px rgba(251, 146, 60, 0.6);
+  }
+}
+
+.modalContent.light .dayCurrent {
+  background-color: #ffffff;
+}
+
+.dayIncomplete {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.modalContent.dark .dayIncomplete {
+  background-color: #4b5563;
+}
+
+.modalContent.light .dayIncomplete {
+  background-color: #9ca3af;
+}
+
+.dayFlame {
+  width: 1rem;
+  height: 1rem;
+  filter: drop-shadow(0 2px 4px #fff);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .modalOverlay {
+    padding: 0.5rem;
+  }
+
+  .modalContent {
+    max-width: 100%;
+  }
+
+  .modalBody {
+    padding: 1.5rem;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .titleFlame {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .podiumIcon {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .calendar {
+    padding: 1rem;
+  }
+
+  .day,
+  .dayActive {
+    font-size: 0.75rem;
+  }
+
+  .progressBar {
+    height: 1.75rem;
+  }
+
+  .dayCompleted,
+  .dayCurrent,
+  .dayIncomplete {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .dayFlame {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}

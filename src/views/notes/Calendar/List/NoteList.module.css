@@ -1,0 +1,428 @@
+.noteListOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+}
+
+.noteListOverlay.light {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.noteListOverlay.dark {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.noteListContent {
+  border-radius: 24px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: slideUp 0.3s ease;
+}
+
+.noteListContent.light {
+  background: white;
+}
+
+.noteListContent.dark {
+  background: var(--bg-primary, #1a1a1a);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.noteListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  color: white;
+}
+
+.noteListTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.noteListClose {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.noteListClose:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Tabs Styles */
+.tabsContainer {
+  padding: 0 24px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabsContainer.light {
+  border-bottom-color: #e5e7eb;
+}
+
+.tabsContainer.dark {
+  border-bottom-color: #334155;
+}
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabButton {
+  flex: 1;
+  padding: 12px 8px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.tabButton.light {
+  color: #6b7280;
+}
+
+.tabButton.light.active {
+  color: #1f2937;
+  border-bottom-color: var(--active-border-color, #667eea);
+}
+
+.tabButton.light:hover {
+  color: #374151;
+}
+
+.tabButton.dark {
+  color: #94a3b8;
+}
+
+.tabButton.dark.active {
+  color: #f1f5f9;
+  border-bottom-color: var(--active-border-color, #4f46e5);
+}
+
+.tabButton.dark:hover {
+  color: #e2e8f0;
+}
+
+.notesList {
+  padding: 24px;
+}
+
+.noNotes {
+  text-align: center;
+  font-style: italic;
+  padding: 40px 20px;
+}
+
+.noNotes.light {
+  color: #6b7280;
+}
+
+.noNotes.dark {
+  color: #64748b;
+}
+
+.noteItem {
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.noteItem.light {
+  background: #f8f9fa;
+}
+
+.noteItem.light:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateX(2px);
+}
+
+.noteItem.dark {
+  background: #1e293b;
+}
+
+.noteItem.dark:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: translateX(2px);
+}
+
+.noteHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.noteTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.noteTitle.light {
+  color: #1f2937;
+}
+
+.noteTitle.dark {
+  color: #f1f5f9;
+}
+
+.noteStatus {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.noteStatus.light {
+  color: white;
+}
+
+.noteStatus.dark {
+  color: white;
+}
+
+.noteStatus.emAndamento {
+  background: #f59e0b;
+}
+
+.noteStatus.feito {
+  background: #10b981;
+}
+
+.noteStatus.naoRealizado {
+  background: #ef4444;
+}
+
+.noteTime {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.noteTime.light {
+  color: #6b7280;
+}
+
+.noteTime.dark {
+  color: #94a3b8;
+}
+
+.noteContent {
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.noteContent.light {
+  color: #374151;
+}
+
+.noteContent.dark {
+  color: #cbd5e1;
+}
+
+.noteActions {
+  display: flex;
+  gap: 8px;
+}
+
+.editButton,
+.deleteButton {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.editButton.light:hover {
+  opacity: 0.9;
+}
+
+.editButton.dark:hover {
+  opacity: 0.9;
+}
+
+.deleteButton.light {
+  background: #ef4444;
+}
+
+.deleteButton.light:hover {
+  background: #dc2626;
+}
+
+.deleteButton.dark {
+  background: #dc2626;
+}
+
+.deleteButton.dark:hover {
+  background: #b91c1c;
+}
+
+.noteListFooter {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0 0 24px 24px;
+}
+
+.noteListFooter.light {
+  border-top: 1px solid #e5e7eb;
+  background: #f8f9fa;
+}
+
+.noteListFooter.dark {
+  border-top: 1px solid #334155;
+  background: #1e293b;
+}
+
+.addButton {
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.addButton.light:hover {
+  opacity: 0.9;
+}
+
+.addButton.dark:hover {
+  opacity: 0.9;
+}
+
+.closeButton {
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.closeButton.light:hover {
+  opacity: 0.9;
+}
+
+.closeButton.dark:hover {
+  opacity: 0.9;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .noteListContent {
+    width: 95%;
+    max-height: 90vh;
+    border-radius: 16px;
+  }
+
+  .noteListHeader,
+  .tabsContainer,
+  .notesList,
+  .noteListFooter {
+    padding: 16px;
+  }
+
+  .tabs {
+    gap: 4px;
+  }
+
+  .tabButton {
+    font-size: 13px;
+    padding: 10px 4px;
+  }
+
+  .noteTitle {
+    font-size: 14px;
+  }
+
+  .noteContent {
+    font-size: 13px;
+  }
+
+  .noteActions {
+    flex-direction: column;
+  }
+
+  .editButton,
+  .deleteButton {
+    width: 100%;
+  }
+
+  .noteListFooter {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .addButton,
+  .closeButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

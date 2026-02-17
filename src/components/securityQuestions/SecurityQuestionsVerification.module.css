@@ -1,0 +1,72 @@
+.container {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.mainLabel {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.description {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.questionItem {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.questionHeader {
+  margin-bottom: 0.75rem;
+}
+
+.questionNumber {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.questionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.questionText {
+  font-size: 0.938rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.answerInput {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.938rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  outline: none;
+  transition: all 0.2s;
+  background-color: white;
+}
+
+.answerInput:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.answerInput:hover {
+  border-color: #9ca3af;
+}

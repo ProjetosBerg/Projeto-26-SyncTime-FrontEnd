@@ -1,0 +1,92 @@
+.statusBadge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px; 
+  border-radius: 10px;
+  border: 2px solid var(--unselected-border-color); 
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  min-width: 130px; 
+  flex-grow: 1;
+}
+
+.statusIcon {
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 0.3s ease;
+  filter: grayscale(100%);
+  opacity: 0.6;
+}
+
+.statusBadge:not(.disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: var(--border-color); 
+}
+
+.statusBadge:not(.disabled):hover .statusIcon {
+  transform: scale(1.1);
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+.selected {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 2px 10px var(--shadow-color); 
+  font-weight: 600;
+}
+
+.selected .statusIcon {
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--border-color);
+  box-shadow: 0 0 6px var(--border-color);
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.3s ease;
+}
+
+.selected .indicator {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(20%);
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .statusBadge {
+    min-width: unset;
+    flex-basis: 48%; 
+  }
+}
+
+@media (max-width: 480px) {
+  .statusBadge {
+    flex-basis: 100%; 
+  }
+}

@@ -1,0 +1,254 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+  backdrop-filter: blur(4px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Container */
+.modal {
+  border-radius: 12px;
+  width: 90%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+  overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.modal.dark {
+  background-color: #1f1f1f;
+  border: 1px solid #3a3a3a;
+}
+
+.modal.light {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header do Modal */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px;
+  transition: border-color 0.3s ease;
+}
+
+.modal.dark .header {
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.modal.light .header {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.modal.dark .header h2 {
+  color: #f3f4f6;
+}
+
+.modal.light .header h2 {
+  color: #1a1a1a;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.modal.dark .closeButton {
+  color: #9ca3af;
+}
+
+.modal.dark .closeButton:hover:not(:disabled) {
+  background-color: #2a2a2a;
+  color: #f3f4f6;
+}
+
+.modal.light .closeButton {
+  color: #666;
+}
+
+.modal.light .closeButton:hover:not(:disabled) {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.closeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Content */
+.content {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Mensagem */
+.message {
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.modal.dark .message {
+  color: #d1d5db;
+}
+
+.modal.light .message {
+  color: #4b5563;
+}
+
+/* Ações (Botões) */
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.cancelButton,
+.submitButton {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+/* Cancel Button */
+.modal.dark .cancelButton {
+  background-color: #374151;
+  color: #e5e7eb;
+}
+
+.modal.dark .cancelButton:hover:not(:disabled) {
+  background-color: #4b5563;
+}
+
+.modal.light .cancelButton {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.modal.light .cancelButton:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+/* Submit Button */
+.submitButton {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.modal.dark .submitButton:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Danger Button */
+.dangerButton {
+  background-color: #dc3545 !important;
+}
+
+.dangerButton:hover:not(:disabled) {
+  background-color: #c82333 !important;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
+}
+
+.modal.dark .dangerButton:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4) !important;
+}
+
+/* Disabled States */
+.cancelButton:disabled,
+.submitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .modal {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .header {
+    padding: 20px;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .header h2 {
+    font-size: 20px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .cancelButton,
+  .submitButton {
+    width: 100%;
+  }
+}

@@ -1,0 +1,124 @@
+.dropdownOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999;
+}
+
+.dropdown {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  border-radius: 12px;
+  min-width: 240px;
+  overflow: hidden;
+  z-index: 1000;
+  transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Dark Theme */
+.dropdown.dark {
+  background: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.dropdown.dark .userInfo {
+  background: #222;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dropdown.dark .name {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dropdown.dark .menuItem {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dropdown.dark .menuItem:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown.dark .icon {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dropdown.dark .divider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Light Theme */
+.dropdown.light {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.dropdown.light .userInfo {
+  background: #f5f5f5;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dropdown.light .name {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.dropdown.light .menuItem {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.dropdown.light .menuItem:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dropdown.light .icon {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.dropdown.light .divider {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos compartilhados */
+.userInfo {
+  padding: 16px;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.menuItems {
+  padding: 8px;
+}
+
+.menuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.icon {
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.divider {
+  height: 1px;
+  margin: 8px 0;
+  transition: background 0.2s ease;
+}

@@ -1,0 +1,657 @@
+/* CONTAINER PRINCIPAL */
+.container {
+  min-height: 100vh;
+  background-color: transparent;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.wrapper {
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.container.dark .title {
+  color: #f3f4f6;
+}
+
+.container.light .title {
+  color: #1f2937;
+}
+
+/* GRID BASE */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+/* DESKTOP (>=1024px) */
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto auto;
+  }
+
+  .presenceCard {
+    grid-column: 1 / -1;
+  }
+}
+
+/* BASE DOS CARDS */
+.weatherCard,
+.inboxCard,
+.presenceCard {
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+/* WEATHER CARD */
+.weatherCard {
+  background: linear-gradient(to bottom right, #3b82f6, #2563eb);
+  color: white;
+}
+
+/* TÍTULO DO CARD */
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.container.dark .inboxCard .cardTitle,
+.container.dark .presenceCard .cardTitle {
+  color: #f3f4f6;
+}
+
+.container.light .inboxCard .cardTitle,
+.container.light .presenceCard .cardTitle {
+  color: #1f2937;
+}
+
+/* ÍCONES */
+.icon,
+.iconPurple,
+.iconGreen {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.iconPurple {
+  color: #9333ea;
+}
+
+.iconGreen {
+  color: #16a34a;
+}
+
+/* ANIMAÇÃO DE CARREGAMENTO */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 12rem;
+  gap: 1rem;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  border-radius: 9999px;
+  height: 3rem;
+  width: 3rem;
+  border-bottom: 2px solid white;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* CONTEÚDO DO CLIMA */
+.weatherContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.weatherMain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cityName {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.temperature {
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.condition {
+  font-size: 1.125rem;
+  opacity: 0.9;
+  text-transform: capitalize;
+}
+
+.weatherDetails {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(96, 165, 250, 0.5);
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detailIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.detailLabel {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.detailValue {
+  font-weight: 600;
+}
+
+/* INBOX & PRESENCE CARD */
+.inboxCard,
+.presenceCard {
+  transition: all 0.3s ease;
+}
+
+.container.dark .inboxCard,
+.container.dark .presenceCard {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+.container.light .inboxCard,
+.container.light .presenceCard {
+  background-color: white;
+  color: #1f2937;
+}
+
+/* CABEÇALHO DOS CARDS */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+/* FILTRO */
+.filterContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filterIcon {
+  width: 1rem;
+  height: 1rem;
+  transition: color 0.3s ease;
+}
+
+.container.dark .filterIcon {
+  color: #9ca3af;
+}
+
+.container.light .filterIcon {
+  color: #9ca3af;
+}
+
+.filterSelect {
+  font-size: 0.875rem;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.container.dark .filterSelect {
+  border: 1px solid #374151;
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+.container.light .filterSelect {
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #1f2937;
+}
+
+.filterSelect:focus {
+  outline: 2px solid var(--focus-color, #9333ea);
+  outline-offset: 2px;
+}
+
+/* NOTIFICAÇÕES */
+.notificationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 20rem;
+  overflow-y: auto;
+}
+
+/* Scrollbar notificações */
+.container.dark .notificationsList::-webkit-scrollbar,
+.container.dark .presenceList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.container.dark .notificationsList::-webkit-scrollbar-track,
+.container.dark .presenceList::-webkit-scrollbar-track {
+  background: #111827;
+}
+
+.container.dark .notificationsList::-webkit-scrollbar-thumb,
+.container.dark .presenceList::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+
+.container.light .notificationsList::-webkit-scrollbar,
+.container.light .presenceList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.container.light .notificationsList::-webkit-scrollbar-track,
+.container.light .presenceList::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.container.light .notificationsList::-webkit-scrollbar-thumb,
+.container.light .presenceList::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.notificationItem {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.container.dark .notificationItem {
+  border: 1px solid #374151;
+  background-color: #111827;
+}
+
+.container.light .notificationItem {
+  border: 1px solid #e5e7eb;
+  background-color: white;
+}
+
+.container.dark .notificationItem:hover {
+  background-color: #1f2937;
+  border-color: #4b5563;
+}
+
+.container.light .notificationItem:hover {
+  background-color: #f9fafb;
+}
+
+.notificationContent {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.notificationMain {
+  flex: 1;
+}
+
+.notificationTitle {
+  font-weight: 500;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.container.dark .notificationTitle {
+  color: #f3f4f6;
+}
+
+.container.light .notificationTitle {
+  color: #1f2937;
+}
+
+.notificationMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.update  { background-color: #dbeafe; color: #1d4ed8; }
+.issue   { background-color: #fee2e2; color: #b91c1c; }
+.note    { background-color: #dcfce7; color: #15803d; }
+.routine { background-color: #f3e8ff; color: #7e22ce; }
+.custom  { background-color: #fef9c3; color: #854d0e; }
+
+.time {
+  font-size: 0.75rem;
+  transition: color 0.3s ease;
+}
+
+.container.dark .time {
+  color: #9ca3af;
+}
+
+.container.light .time {
+  color: #6b7280;
+}
+
+/* PRESENCE CARD - AGORA COM CORES DINÂMICAS */
+.presenceContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dataContainer {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Fundo com transparência da cor de ênfase */
+.statBox,
+.statBoxBlue {
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+  opacity: 0;
+  background-color: #dcfce7;
+  transform: translateY(10px);
+}
+
+.visible .statBox,
+.visible .statBoxBlue {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.1s;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  transition: color 0.3s ease;
+}
+
+.container.dark .statLabel {
+  color: #9ca3af;
+}
+
+.container.light .statLabel {
+  color: #4b5563;
+}
+
+.statValueGreen,
+.statValueBlue {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.presenceList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 40rem;
+  overflow-y: auto;
+}
+
+.presenceRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.5s ease-out;
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+.rowAnimate {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dayLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  width: 3rem;
+  flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.container.dark .dayLabel {
+  color: #9ca3af;
+}
+
+.container.light .dayLabel {
+  color: #4b5563;
+}
+
+.progressBar {
+  flex: 1;
+  border-radius: 9999px;
+  height: 2rem;
+  position: relative;
+  overflow: hidden;
+  background-color: #f3f4f6;
+}
+
+.container.dark .progressBar {
+  background-color: #111827;
+}
+
+.progressFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: linear-gradient(to right, #4ade80, #22c55e);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  transition: width 0.5s ease-out;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.visible .progressFill {
+  transform: scaleX(1);
+  transition-delay: 0.2s;
+}
+
+.sessionCount {
+  font-size: 0.75rem;
+  color: white;
+  font-weight: 600;
+}
+
+.checkIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  transition: color 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.visible .checkIcon {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: 0.3s;
+}
+
+.emptyCheck {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  border: 2px solid #d1d5db;
+}
+
+.container.dark .emptyCheck {
+  border-color: #374151;
+}
+
+.presenceFooter {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.container.dark .presenceFooter {
+  border-top-color: #374151;
+}
+
+.visible .presenceFooter {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.4s;
+}
+
+.presenceRate {
+  font-size: 0.875rem;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.container.dark .presenceRate {
+  color: #9ca3af;
+}
+
+.container.light .presenceRate {
+  color: #4b5563;
+}
+
+.rateValue {
+  font-weight: 700;
+}
+
+.errorMessage {
+  text-align: center;
+  padding: 1rem;
+  color: #dc2626;
+}
+
+/* RESPONSIVO */
+@media (max-width: 1024px) {
+  .wrapper { padding: 1.5rem; }
+  .title { font-size: 1.5rem; margin-bottom: 1.5rem; }
+  .grid { grid-template-columns: 1fr; gap: 1.25rem; }
+  .presenceCard { grid-column: auto; }
+  .temperature { font-size: 2.5rem; }
+  .cardHeader { gap: 0.75rem; }
+}
+
+@media (max-width: 768px) {
+  .wrapper { padding: 1rem; }
+  .title { font-size: 1.4rem; margin-bottom: 1.25rem; }
+  .cardTitle { font-size: 1.1rem; }
+  .weatherCard, .inboxCard, .presenceCard { padding: 1.25rem; }
+  .cardHeader { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .filterContainer { width: 100%; justify-content: flex-start; }
+  .filterSelect { flex: 1; min-width: 100px; }
+  .weatherMain { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .statsGrid { grid-template-columns: 1fr; gap: 0.75rem; }
+  .progressBar { height: 1.75rem; }
+  .notificationsList { max-height: 18rem; }
+  .presenceList { max-height: 35rem; }
+}
+
+@media (max-width: 480px) {
+  .wrapper { padding: 0.75rem; }
+  .title { font-size: 1.25rem; margin-bottom: 1rem; }
+  .grid { gap: 1rem; }
+  .weatherCard, .inboxCard, .presenceCard { padding: 1rem; border-radius: 0.75rem; }
+  .cardTitle { font-size: 1rem; }
+  .icon, .iconPurple, .iconGreen { width: 1rem; height: 1rem; }
+  .temperature { font-size: 2rem; }
+  .condition { font-size: 1rem; }
+  .weatherDetails { grid-template-columns: 1fr; gap: 0.75rem; }
+  .filterSelect { font-size: 0.8rem; padding: 0.375rem 0.5rem; }
+  .notificationItem { padding: 0.625rem; }
+  .notificationTitle { font-size: 0.8rem; }
+  .badge, .time { font-size: 0.7rem; }
+  .statsGrid { gap: 0.5rem; }
+  .statBox, .statBoxBlue { padding: 0.625rem; }
+  .statLabel { font-size: 0.8rem; }
+  .statValueGreen, .statValueBlue { font-size: 1.25rem; }
+  .presenceList { gap: 0.5rem; max-height: 30rem; }
+  .presenceRow { gap: 0.5rem; }
+  .dayLabel { width: 2.5rem; font-size: 0.8rem; }
+  .progressBar { height: 1.5rem; }
+  .sessionCount { font-size: 0.7rem; }
+  .checkIcon, .emptyCheck { width: 1rem; height: 1rem; }
+  .presenceRate { font-size: 0.8rem; }
+}
+
+@media (max-width: 360px) {
+  .wrapper { padding: 0.5rem; }
+  .title { font-size: 1.125rem; }
+  .cardTitle { font-size: 0.95rem; }
+  .temperature { font-size: 1.75rem; }
+  .filterContainer { flex-wrap: wrap; gap: 0.375rem; }
+  .filterSelect { font-size: 0.75rem; padding: 0.25rem 0.375rem; }
+  .notificationTitle { font-size: 0.75rem; }
+  .dayLabel { width: 2rem; font-size: 0.75rem; }
+  .progressBar { height: 1.25rem; }
+}
