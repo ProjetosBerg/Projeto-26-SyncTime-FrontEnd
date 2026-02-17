@@ -13,7 +13,7 @@ import DefaultModal from '../../components/modal/DefaultModal';
 import TermsContent from './TermsContent';
 
 // 🖼️ Assets
-import Logo from '../../assets/logo.svg';
+import Logo from '../../assets/Logo.svg';
 
 const StartLogin = () => {
   const [modalOpen, setModalOpen] = useState(false);

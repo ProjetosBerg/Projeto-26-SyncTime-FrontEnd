@@ -14,7 +14,7 @@ import Input from '../../components/Input/input';
 import SecurityQuestions from '../../components/securityQuestions/SecurityQuestions';
 
 // 🖼️ Assets
-import Logo from '../../assets/logo.svg';
+import Logo from '../../assets/Logo.svg';
 
 // 🌐 Contexto
 import { Context } from '../../context/UserContext';

@@ -12,7 +12,7 @@ import Button from '../../components/button/Button';
 import SecurityQuestionsVerification from '../../components/securityQuestions/SecurityQuestionsVerification';
 
 // 🖼️ Assets
-import Logo from '../../assets/logo.svg';
+import Logo from '../../assets/Logo.svg';
 
 // 🔐 Serviços
 import ServiceAUTH from '../../services/ServiceAUTH';
