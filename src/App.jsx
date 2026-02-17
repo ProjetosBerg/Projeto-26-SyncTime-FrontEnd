@@ -10,7 +10,7 @@ import { useCallback, useState } from 'react';
 import Message from './components/flashMessage/Message';
 import Header from './components/header/Header';
 import Footer from './components/footer/Footer';
-import Sidebar from './components/sidebar/Sidebar';
+import Sidebar from './components/Sidebar/Sidebar';
 import Container from './components/layout/Container';
 // 📄 Páginas
 import Login from './views/auth/Login';
