@@ -7,7 +7,7 @@ import { ErrorMessage } from '@hookform/error-message';
 import styles from '../../../components/modal/SettingsModal.module.css';
 
 // 🧩 Componentes
-import NewPassword from '../../newPassword/newPassword';
+import NewPassword from '../../newPassword/NewPassword';
 import ConfirmModal from '../../modal/ConfirmModal';
 
 // 🧠 Hooks customizados

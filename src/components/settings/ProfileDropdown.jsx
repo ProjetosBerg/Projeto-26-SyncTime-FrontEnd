@@ -8,7 +8,7 @@ import styles from './ProfileDropdown.module.css';
 
 // 🧩 Componentes
 import SettingsModal from '../modal/SettingsModal';
-import NewPassword from '../newPassword/newPassword';
+import NewPassword from '../newPassword/NewPassword';
 
 // 🧠 Hooks customizados
 import { useTheme } from '../../hooks/useTheme';
