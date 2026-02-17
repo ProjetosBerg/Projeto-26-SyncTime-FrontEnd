@@ -6,7 +6,7 @@ import { ErrorMessage } from '@hookform/error-message';
 import styles from './SecurityQuestions.module.css';
 
 // 🧩 Componentes
-import Input from '../input/input';
+import Input from '../input/Input';
 import SingleSelect from '../select/SingleSelect';
 
 // 🧰 Utilitários
