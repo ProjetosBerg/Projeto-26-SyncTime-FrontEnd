@@ -10,7 +10,7 @@ import styles from './Register.module.css';
 
 // 🧩 Componentes
 import Button from '../../components/button/Button';
-import Input from '../../components/Input/input';
+import Input from '../../components/input/input';
 import SecurityQuestions from '../../components/securityQuestions/SecurityQuestions';
 
 // 🖼️ Assets
