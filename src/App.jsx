@@ -1,11 +1,12 @@
 import {
   BrowserRouter as Router,
+  matchPath,
   Switch,
   Route,
   Redirect,
   useLocation
 } from 'react-router-dom';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 // 🧩 Componentes
 import Message from './components/flashMessage/Message';
 import Header from './components/header/Header';
@@ -35,6 +36,74 @@ import ReportMonthlyRecordForm from './views/report/Sections/Category/Form/Repor
 import TransactionForm from './views/report/Sections/Category/Transaction/Form/TransactionForm';
 import Calendar from './views/notes/Calendar/Calendar';
 import DashboardCategoryManager from './views/dashboard/category/dashoardCategoryManager';
+
+const APP_NAME = 'SyncTime';
+
+const pageTitles = [
+  { path: '/', exact: true, title: 'Acesso' },
+  { path: '/login', exact: true, title: 'Login' },
+  { path: '/register', exact: true, title: 'Cadastro' },
+  { path: '/esqueceu-senha', exact: true, title: 'Recuperar senha' },
+  { path: '/inicio', exact: true, title: 'Inicio' },
+  { path: '/dashboard/categoria', exact: true, title: 'Dashboard' },
+  { path: '/anotacoes', exact: true, title: 'Anotacoes' },
+  { path: '/configuracoes', exact: true, title: 'Configuracoes' },
+  { path: '/categoria', exact: true, title: 'Categorias' },
+  { path: '/categoria/form', exact: true, title: 'Nova categoria' },
+  { path: '/categoria/form/:id', exact: true, title: 'Editar categoria' },
+  { path: '/record-type', exact: true, title: 'Tipos de registro' },
+  { path: '/record-type/form', exact: true, title: 'Novo tipo de registro' },
+  { path: '/record-type/form/:id', exact: true, title: 'Editar tipo de registro' },
+  { path: '/custom-fields', exact: true, title: 'Campos personalizados' },
+  { path: '/custom-fields/form', exact: true, title: 'Novo campo personalizado' },
+  { path: '/custom-fields/form/:id', exact: true, title: 'Editar campo personalizado' },
+  {
+    path: '/relatorios/categoria/relatorio-mesal/:id',
+    exact: true,
+    title: 'Relatorio mensal'
+  },
+  {
+    path: '/relatorios/categoria/relatorio-mesal/form',
+    exact: true,
+    title: 'Novo relatorio mensal'
+  },
+  {
+    path: '/relatorios/categoria/relatorio-mesal/form/:id',
+    exact: true,
+    title: 'Editar relatorio mensal'
+  },
+  {
+    path: '/relatorios/categoria/transações',
+    exact: true,
+    title: 'Transacoes'
+  },
+  {
+    path: '/relatorios/categoria/transações/form',
+    exact: true,
+    title: 'Nova transacao'
+  },
+  {
+    path: '/relatorios/categoria/transações/form/:id',
+    exact: true,
+    title: 'Editar transacao'
+  }
+];
+
+function PageTitle() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const currentPage = pageTitles.find(({ path, exact }) =>
+      matchPath(location.pathname, { path, exact })
+    );
+
+    document.title = currentPage
+      ? `${currentPage.title} • ${APP_NAME}`
+      : APP_NAME;
+  }, [location.pathname]);
+
+  return null;
+}
 
 function ProtectedRoute({ children, ...rest }) {
   const token = localStorage.getItem('token');
@@ -159,6 +228,7 @@ function App() {
   return (
     <Router>
       <UserProvider>
+        <PageTitle />
         {isLoading ? (
           <LoadingPage onLoadingComplete={() => setIsLoading(false)} />
         ) : (
