@@ -8,14 +8,16 @@ import { useEmphasisColor } from '../../../../hooks/useEmphasisColor';
 import useFlashMessage from '../../../../hooks/userFlashMessage';
 import ServiceRoutines from '../services/ServiceRoutines';
 
+const PERIODS = ['Manhã', 'Tarde', 'Noite'];
+
 const CreateRoutine = ({
   isOpen,
   onClose,
   selectedDate,
   noteType,
   onNoteTypeChange,
-  selectedPeriod,
-  onSelectedPeriodChange,
+  selectedPeriods,
+  onSelectedPeriodsChange,
   formattedDate,
   selectedDateNotes,
   onRefresh,
@@ -36,48 +38,59 @@ const CreateRoutine = ({
     mode: 'onChange',
     defaultValues: {
       noteType: '',
-      selectedPeriod: ''
+      selectedPeriods: []
     }
   });
 
   useEffect(() => {
     reset({
       noteType: noteType || '',
-      selectedPeriod: selectedPeriod || ''
+      selectedPeriods: selectedPeriods || []
     });
-  }, [noteType, selectedPeriod, reset]);
+  }, [noteType, selectedPeriods, reset]);
 
   if (!isOpen) return null;
 
   const isPeriodType = noteType === 'periodo';
   const hasSummary = !!selectedDateNotes.find(note => note.title === 'Resumo do Dia');
+  const existingPeriods = PERIODS.filter(period =>
+    selectedDateNotes.some(note => note.title === period)
+  );
 
   const handleAddPeriod = async () => {
-    const isValid = await trigger(['noteType', 'selectedPeriod']);
+    const isValid = await trigger(['noteType', 'selectedPeriods']);
     if (!isValid) return;
     
     try {
       setLoading(true);
-      console.log('selectedDate', selectedDate)
       const createdAtDate = selectedDate ? new Date(selectedDate) : new Date();
-      createdAtDate.setHours(0, 0, 0, 0)
-      const data = {
-        type: 'periodo',
-        period: selectedPeriod,
-        createdAt: createdAtDate.toISOString()
+      createdAtDate.setHours(0, 0, 0, 0);
 
-      };
-      const response = await ServiceRoutines.createRoutines(data);
+      const response = await ServiceRoutines.createRoutines({
+        type: 'periodo',
+        periods: selectedPeriods,
+        createdAt: createdAtDate.toISOString()
+      });
+
       if (response.data.status === 'OK') {
-        setFlashMessage('Rotina criada com sucesso', 'success');
+        const quantity = selectedPeriods.length;
+        setFlashMessage(
+          quantity === 1
+            ? 'Rotina criada com sucesso'
+            : `${quantity} rotinas criadas com sucesso`,
+          'success'
+        );
         onClose();
-        onSelectedPeriodChange('');
+        onSelectedPeriodsChange([]);
         onNoteTypeChange('');
         onRefresh();
       }
     } catch (error) {
       console.error('Erro ao criar rotina:', error);
-      const errorMsg = error.response?.data?.errors?.[0] || 'Erro ao criar rotina';
+      const errorMsg =
+        error.response?.data?.errors?.[0] ||
+        error.response?.data?.message ||
+        'Erro ao criar rotina';
       setFlashMessage(errorMsg, 'error');
     } finally {
       setLoading(false);
@@ -160,8 +173,8 @@ const CreateRoutine = ({
                     field.onChange(e);
                     onNoteTypeChange(e.target.value);
                     if (e.target.value !== 'periodo') {
-                      onSelectedPeriodChange('');
-                      setValue('selectedPeriod', '');
+                      onSelectedPeriodsChange([]);
+                      setValue('selectedPeriods', []);
                     }
                   }}
                 >
@@ -179,55 +192,83 @@ const CreateRoutine = ({
 
             {isPeriodType && (
               <>
-                <label className={`${styles.periodLabel} ${styles[theme]}`}>Selecione o período:</label>
+                <label className={`${styles.periodLabel} ${styles[theme]}`}>
+                  Selecione um ou mais períodos:
+                </label>
                 <Controller
-                  name="selectedPeriod"
+                  name="selectedPeriods"
                   control={control}
                   rules={{
-                    required: 'Período é obrigatório',
-                    validate: (value) => {
-                      if (!value) return 'Período é obrigatório';
-                      if (selectedDateNotes.find(note => note.title === value)) {
-                        return 'Já existe uma rotina para este período';
+                    validate: (values) => {
+                      if (!values?.length) {
+                        return 'Selecione pelo menos um período';
+                      }
+                      if (values.some(period => existingPeriods.includes(period))) {
+                        return 'Já existe uma rotina para um dos períodos selecionados';
                       }
                       return true;
                     }
                   }}
                   render={({ field }) => (
-                    <select
-                      {...field}
-                      className={`${styles.periodSelect} ${styles[theme]}`}
-                      disabled={!isPeriodType || loading}
-                      style={{
-                        '--focus-color': emphasisColor || '#667eea'
-                      }}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        onSelectedPeriodChange(e.target.value);
-                      }}
-                    >
-                      <option value="">-- Escolha um período --</option>
-                      <option value="Manhã">Manhã</option>
-                      <option value="Tarde">Tarde</option>
-                      <option value="Noite">Noite</option>
-                    </select>
+                    <div className={styles.periodOptions}>
+                      {PERIODS.map((period, index) => {
+                        const isAlreadyCreated = existingPeriods.includes(period);
+                        const isSelected = field.value?.includes(period);
+
+                        return (
+                          <label
+                            key={period}
+                            className={`${styles.periodOption} ${styles[theme]} ${
+                              isSelected ? styles.periodOptionSelected : ''
+                            } ${isAlreadyCreated ? styles.periodOptionDisabled : ''}`}
+                            style={{
+                              '--selection-color': emphasisColor || '#667eea'
+                            }}
+                          >
+                            <input
+                              ref={index === 0 ? field.ref : undefined}
+                              type="checkbox"
+                              value={period}
+                              checked={!!isSelected}
+                              disabled={!isPeriodType || loading || isAlreadyCreated}
+                              onBlur={field.onBlur}
+                              onChange={() => {
+                                const nextPeriods = isSelected
+                                  ? field.value.filter(value => value !== period)
+                                  : [...(field.value || []), period];
+                                field.onChange(nextPeriods);
+                                onSelectedPeriodsChange(nextPeriods);
+                              }}
+                            />
+                            <span>{period}</span>
+                            {isAlreadyCreated && (
+                              <span className={styles.existingPeriodBadge}>Já criado</span>
+                            )}
+                          </label>
+                        );
+                      })}
+                    </div>
                   )}
                 />
                 <ErrorMessage
                   errors={errors}
-                  name="selectedPeriod"
+                  name="selectedPeriods"
                   render={({ message }) => <p className={`${styles.errorMessage} ${styles[theme]}`}>{message}</p>}
                 />
                 <button 
                   onClick={handleAddPeriod} 
-                  disabled={loading || !!errors.selectedPeriod || !selectedPeriod}
-                  className={`${styles.addButton} ${(!selectedPeriod || !!errors.selectedPeriod || loading) ? styles.addButtonDisabled : ''}`}
+                  disabled={loading || !!errors.selectedPeriods || !selectedPeriods.length}
+                  className={`${styles.addButton} ${(!selectedPeriods.length || !!errors.selectedPeriods || loading) ? styles.addButtonDisabled : ''}`}
                   style={{
                     background: `linear-gradient(135deg, ${emphasisColor || '#667eea'} 0%, ${emphasisColor || '#764ba2'} 100%)`
                   }}
                 >
                   <Plus size={18} />
-                  {loading ? 'Adicionando...' : 'Adicionar Período'}
+                  {loading
+                    ? 'Adicionando...'
+                    : selectedPeriods.length > 1
+                      ? `Adicionar ${selectedPeriods.length} períodos`
+                      : 'Adicionar período'}
                 </button>
               </>
             )}

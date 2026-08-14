@@ -29,7 +29,7 @@ const Calendar = () => {
   const [summaryContent, setSummaryContent] = useState('');
   const [noteToEdit, setNoteToEdit] = useState(null);
   const [noteType, setNoteType] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('');
+  const [selectedPeriods, setSelectedPeriods] = useState([]);
   const [holidays, setHolidays] = useState({});
   const [openNoteListFromNotification, setOpenNoteListFromNotification] =
     useState(false); 
@@ -379,7 +379,7 @@ const Calendar = () => {
       );
       setSelectedDate(date);
       setNoteType('');
-      setSelectedPeriod('');
+      setSelectedPeriods([]);
       setShowModal(true);
     }
   };
@@ -764,8 +764,8 @@ const Calendar = () => {
         selectedDate={selectedDate}
         noteType={noteType}
         onNoteTypeChange={setNoteType}
-        selectedPeriod={selectedPeriod}
-        onSelectedPeriodChange={setSelectedPeriod}
+        selectedPeriods={selectedPeriods}
+        onSelectedPeriodsChange={setSelectedPeriods}
         formattedDate={formattedSelectedDate}
         selectedDateNotes={selectedDateNotesForCreate}
         onRefresh={refreshNotesForDate}
