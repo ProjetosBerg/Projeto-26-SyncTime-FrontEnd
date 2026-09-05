@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 
-const SOCKET_SERVER_URL = 'http://localhost:3000'; 
+const defaultSocketUrl = import.meta.env.PROD
+  ? 'https://projeto-26-synctime-backend.onrender.com'
+  : 'http://localhost:3000';
+const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_URL || defaultSocketUrl;
 
 export const useSocket = (userId) => {
   const socketRef = useRef(null);
