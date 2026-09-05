@@ -17,6 +17,13 @@ import {
   TABLE_CONFIG_KEYS
 } from './useMemorizeTableColumns';
 
+const getApiErrorMessage = (error, fallback) =>
+  error?.response?.data?.errors?.[0] ||
+  error?.response?.data?.message ||
+  fallback;
+
+let refreshRequest = null;
+
 export default function useAuth() {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -36,6 +43,26 @@ export default function useAuth() {
     useMemorizeTableColumns(TABLE_CONFIG_KEYS.TRANSACTIONS_RECORDS);
 
   const hasValidated = useRef(false);
+  const handlingUnauthorized = useRef(false);
+
+  function clearLocalSession(silent = false, deleteAccount = false) {
+    setAuthenticated(false);
+    setLoading(false);
+    clearMemorizedFiltersUsers();
+    clearAllMemorizedConfigs();
+    localStorage.removeItem('token');
+    api.defaults.headers.Authorization = undefined;
+
+    if (!silent && !deleteAccount) {
+      setFlashMessage('Logout realizado com sucesso!', 'success');
+    } else if (silent && !deleteAccount) {
+      setFlashMessage('Sua sessão expirou. Faça login novamente.', 'warning');
+    } else {
+      setFlashMessage('Conta excluída com sucesso!', 'success');
+    }
+
+    history.push('/login');
+  }
 
   async function validateToken() {
     const token = localStorage.getItem('token');
@@ -49,15 +76,17 @@ export default function useAuth() {
     try {
       api.defaults.headers.Authorization = `Bearer ${token}`;
       await api.post('/auth/validate', {
-        sessionId: getMemorizedFiltersUsers()?.sessionId,
+        sessionId: getMemorizedFiltersUsers()?.sessionId
       });
 
       setAuthenticated(true);
       setLoading(false);
       return true;
     } catch (error) {
-      console.error('Token expirado ou inválido', error);
-      await logout(true);
+      if (!handlingUnauthorized.current) {
+        handlingUnauthorized.current = true;
+        clearLocalSession(true);
+      }
       return false;
     }
   }
@@ -69,13 +98,75 @@ export default function useAuth() {
     }
   }, []);
 
-
   useEffect(() => {
     const interceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response?.status === 401) {
-          await logout(true);
+        const originalRequest = error.config;
+        const requestUrl = originalRequest?.url || '';
+        const isPublicAuthRequest = [
+          '/user/login',
+          '/user/register',
+          '/user/find-questions',
+          '/user/forgot-password'
+        ].some((path) => requestUrl.includes(path));
+        const canRefresh =
+          error.response?.status === 401 &&
+          Boolean(originalRequest) &&
+          Boolean(localStorage.getItem('token')) &&
+          !originalRequest?._retry &&
+          !isPublicAuthRequest &&
+          !requestUrl.includes('/auth/refresh') &&
+          !requestUrl.includes('/user/logout');
+
+        if (canRefresh) {
+          originalRequest._retry = true;
+
+          try {
+            if (!refreshRequest) {
+              refreshRequest = api
+                .post(
+                  '/auth/refresh',
+                  {},
+                  { headers: { 'X-Requested-With': 'XMLHttpRequest' } }
+                )
+                .finally(() => {
+                  refreshRequest = null;
+                });
+            }
+
+            const refreshResponse = await refreshRequest;
+            const newToken = refreshResponse.data?.data?.token;
+            if (!newToken) throw new Error('Token de acesso nao retornado');
+
+            localStorage.setItem('token', newToken);
+            api.defaults.headers.Authorization = `Bearer ${newToken}`;
+            if (typeof originalRequest.headers?.set === 'function') {
+              originalRequest.headers.set(
+                'Authorization',
+                `Bearer ${newToken}`
+              );
+            } else {
+              originalRequest.headers = {
+                ...originalRequest.headers,
+                Authorization: `Bearer ${newToken}`
+              };
+            }
+            handlingUnauthorized.current = false;
+            return api(originalRequest);
+          } catch {
+            // A requisicao de refresh trata a limpeza local ao retornar 401.
+          }
+        }
+
+        if (
+          error.response?.status === 401 &&
+          !isPublicAuthRequest &&
+          !requestUrl.includes('/user/logout') &&
+          !handlingUnauthorized.current
+        ) {
+          handlingUnauthorized.current = true;
+          clearLocalSession(true);
         }
         return Promise.reject(error);
       }
@@ -99,7 +190,7 @@ export default function useAuth() {
 
       history.push('/login');
     } catch (error) {
-      msgText = error.response.data.errors[0];
+      msgText = getApiErrorMessage(error, 'Erro ao criar a conta.');
       msgType = 'error';
     }
 
@@ -119,7 +210,7 @@ export default function useAuth() {
 
       history.push('/login');
     } catch (error) {
-      msgText = error.response.data.errors[0];
+      msgText = getApiErrorMessage(error, 'Erro ao redefinir a senha.');
       msgType = 'error';
     }
 
@@ -139,7 +230,7 @@ export default function useAuth() {
 
       await authUser(data.data);
     } catch (error) {
-      msgText = error?.response?.data?.errors[0];
+      msgText = getApiErrorMessage(error, 'Login ou senha inválidos.');
       msgType = 'error';
     }
 
@@ -147,6 +238,7 @@ export default function useAuth() {
   }
 
   async function authUser(data) {
+    handlingUnauthorized.current = false;
     setAuthenticated(true);
     api.defaults.headers.Authorization = `Bearer ${data.token}`;
     memorizeFiltersUsers({
@@ -167,7 +259,6 @@ export default function useAuth() {
   }
 
   async function logout(silent = false, deleteAccount = false) {
-    console.log('chegou aqui no logout');
     await ServiceAUTH.logout({
       sessionId: getMemorizedFiltersUsers()?.sessionId
     }).catch((error) => {

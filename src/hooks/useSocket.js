@@ -5,40 +5,38 @@ const SOCKET_SERVER_URL = 'http://localhost:3000';
 
 export const useSocket = (userId) => {
   const socketRef = useRef(null);
-  const isAuthenticated = useRef(false);
 
   useEffect(() => {
-    if (!userId) {
-      console.warn('useSocket: userId não fornecido. Conexão não autenticada.');
+    const token = localStorage.getItem('token');
+
+    if (!userId || !token) {
       return;
     }
 
     socketRef.current = io(SOCKET_SERVER_URL, {
       autoConnect: true,
-      transports: ['websocket', 'polling'], 
+      transports: ['websocket', 'polling'],
+      auth: (callback) => {
+        callback({ token: localStorage.getItem('token') });
+      }
     });
 
     const socket = socketRef.current;
 
     socket.on('connect', () => {
       console.log('Socket.IO conectado:', socket.id);
-      if (!isAuthenticated.current) {
-        socket.emit('auth', { userId });
-        isAuthenticated.current = true;
-      }
     });
 
     socket.on('authSuccess', (data) => {
       console.log('Socket.IO autenticado:', data.message);
     });
 
-    socket.on('authError', (data) => {
-      console.error('Socket.IO auth falhou:', data.message);
+    socket.on('connect_error', (error) => {
+      console.error('Socket.IO auth falhou:', error.message);
     });
 
     socket.on('disconnect', (reason) => {
       console.log('Socket.IO desconectado:', reason);
-      isAuthenticated.current = false;
     });
 
     return () => {

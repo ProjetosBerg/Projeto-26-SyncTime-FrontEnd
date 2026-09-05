@@ -78,7 +78,6 @@ const Register = () => {
       formData.append('avatar', data.avatar[0]);
     }
 
-    console.error('formData', formData);
     registerUser(formData);
   };
 
