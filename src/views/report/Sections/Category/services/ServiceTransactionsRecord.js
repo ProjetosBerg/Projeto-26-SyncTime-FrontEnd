@@ -58,7 +58,6 @@ class ServiceTransactionsRecord {
   }
 
   editTransactionsRecord(id, data) {
-    console.log('editServiceTransactionsRecord', id, data);
     return api.patch(`/transactions/edit/${id}`, data);
   }
 

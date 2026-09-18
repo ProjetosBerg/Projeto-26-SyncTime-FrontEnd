@@ -1,12 +1,13 @@
-import bus from "../utils/bus";
+import { useCallback } from 'react';
+import bus from '../utils/bus';
 
 export default function useFlashMessage() {
+  const setFlashMessage = useCallback((msg, type) => {
+    bus.emit('flash', {
+      message: msg,
+      type
+    });
+  }, []);
 
-    function setFlashMessage(msg, type) {
-        bus.emit('flash', {
-            message: msg, 
-            type: type})
-    }
-
-    return {setFlashMessage}
+  return { setFlashMessage };
 }

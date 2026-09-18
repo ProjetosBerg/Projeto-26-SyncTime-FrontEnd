@@ -82,20 +82,20 @@
   border-color: #d1d5db;
 }
 
-.filterButton:hover:not(.active),
-.exportButton:hover:not(.active) {
+.filterButton:hover:not(.active):not(:disabled),
+.exportButton:hover:not(.active):not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.headerContainer.dark .filterButton:hover:not(.active),
-.headerContainer.dark .exportButton:hover:not(.active) {
+.headerContainer.dark .filterButton:hover:not(.active):not(:disabled),
+.headerContainer.dark .exportButton:hover:not(.active):not(:disabled) {
   background-color: #4b5563;
   border-color: #6b7280;
 }
 
-.headerContainer.light .filterButton:hover:not(.active),
-.headerContainer.light .exportButton:hover:not(.active) {
+.headerContainer.light .filterButton:hover:not(.active):not(:disabled),
+.headerContainer.light .exportButton:hover:not(.active):not(:disabled) {
   background-color: #f9fafb;
   border-color: #9ca3af;
 }
@@ -913,4 +913,12 @@
 
 .headerContainer.light .checkboxLabel:hover {
   background-color: #f3f4f6;
+}
+
+.filterButton:disabled,
+.exportButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
 }

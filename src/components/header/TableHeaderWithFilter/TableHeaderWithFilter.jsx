@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Filter, X, Plus, ChevronDown, Check, RotateCcw, Download } from 'lucide-react';
 import styles from './TableHeaderWithFilter.module.css';
 import { useTheme } from '../../../hooks/useTheme';
@@ -14,7 +14,9 @@ const TableHeaderWithFilter = ({
   showDisabled = false,
   onToggleDisabled,
   isExportacao = false,
-  onExport
+  onExport,
+  isExporting = false,
+  exportDisabled = false
 }) => {
   const { theme } = useTheme();
   const { emphasisColor } = useEmphasisColor();
@@ -67,6 +69,11 @@ const TableHeaderWithFilter = ({
     return color;
   };
 
+  const handleCancel = useCallback(() => {
+    setDraftFilters([...filters]);
+    setShowFilterPanel(false);
+  }, [filters]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (panelRef.current && !panelRef.current.contains(event.target)) {
@@ -82,7 +89,7 @@ const TableHeaderWithFilter = ({
     }
 
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFilterPanel, showExportDropdown]);
+  }, [showFilterPanel, showExportDropdown, handleCancel]);
 
   useEffect(() => {
     const activeCount = filters.filter(f => f.value && f.value.trim() !== '').length;
@@ -94,6 +101,12 @@ const TableHeaderWithFilter = ({
       setDraftFilters([...filters]);
     }
   }, [showFilterPanel, filters]);
+
+  useEffect(() => {
+    if (isExporting || exportDisabled) {
+      setShowExportDropdown(false);
+    }
+  }, [isExporting, exportDisabled]);
 
   const handleApply = () => {
     const cleanedFilters = draftFilters.filter(f => {
@@ -112,11 +125,6 @@ const TableHeaderWithFilter = ({
       onFiltersChange(cleanedFilters);
     }
     
-    setShowFilterPanel(false);
-  };
-
-  const handleCancel = () => {
-    setDraftFilters([...filters]); 
     setShowFilterPanel(false);
   };
 
@@ -160,7 +168,7 @@ const TableHeaderWithFilter = ({
   const hasDraftChanges = JSON.stringify(draftFilters) !== JSON.stringify(filters);
 
   const handleExportClick = (format) => {
-    if (onExport) {
+    if (onExport && !isExporting && !exportDisabled) {
       onExport(format);
     }
     setShowExportDropdown(false);
@@ -341,8 +349,10 @@ const TableHeaderWithFilter = ({
         {isExportacao && (
           <div className={styles.exportContainer} ref={exportRef}>
             <button
-              className={`${styles.exportButton} ${showExportDropdown ? styles.active : ''}`}
+              className={`${styles.exportButton} ${showExportDropdown ? styles.active : ''} ${isExporting ? styles.loading : ''}`}
               onClick={() => setShowExportDropdown(!showExportDropdown)}
+              disabled={isExporting || exportDisabled}
+              aria-busy={isExporting}
               style={{
                 '--focus-border-color': accentColor,
                 '--focus-shadow-color': addAlpha(accentColor, theme === 'dark' ? 0.2 : 0.1),
@@ -350,14 +360,14 @@ const TableHeaderWithFilter = ({
               }}
             >
               <Download size={18} className={styles.exportIcon} />
-              Exportar
+              {isExporting ? 'Exportando...' : 'Exportar'}
               <ChevronDown 
                 size={16} 
                 className={`${styles.chevronIcon} ${showExportDropdown ? styles.rotated : ''}`} 
               />
             </button>
 
-            {showExportDropdown && (
+            {showExportDropdown && !isExporting && !exportDisabled && (
               <div className={styles.exportDropdown}>
                 {exportFormats.map((fmt) => (
                   <button

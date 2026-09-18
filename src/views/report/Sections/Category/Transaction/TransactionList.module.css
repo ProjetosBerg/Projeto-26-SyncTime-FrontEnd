@@ -289,3 +289,80 @@ input:checked + .slider:before {
   opacity: 0.85;
   transform: scale(1.02);
 }
+
+.loadingState {
+  display: flex;
+  min-height: 300px;
+  align-items: center;
+  justify-content: center;
+}
+
+.updatingState {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  color: var(--text-secondary, #64748b);
+  font-size: 13px;
+  text-align: center;
+}
+
+.errorState {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 0;
+  padding: 14px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
+.container.dark .errorState {
+  border-color: #7f1d1d;
+  background-color: #450a0a;
+  color: #fecaca;
+}
+
+.errorState button {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.errorState button:hover {
+  background-color: rgba(127, 29, 29, 0.08);
+}
+
+.emptyState .emptyStateTitle {
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.emptyState .emptyStateText {
+  margin: 0 0 20px;
+  color: var(--text-secondary, #64748b);
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 12px;
+  }
+
+  .errorState {
+    align-items: stretch;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .errorState button {
+    width: 100%;
+  }
+}

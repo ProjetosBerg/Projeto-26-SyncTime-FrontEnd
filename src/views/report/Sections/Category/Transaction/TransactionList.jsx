@@ -1,5 +1,5 @@
 // ⚙️ Bibliotecas externas
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Edit, Trash2 } from 'lucide-react';
 import { useHistory, useLocation } from 'react-router-dom';
 import useFlashMessage from '../../../../../hooks/userFlashMessage';
@@ -37,13 +37,14 @@ const TransactionList = () => {
 
   const [transactionRecords, setTransactionRecords] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
   const [activeFilters, setActiveFilters] = useState([]);
-  const [status, setStatus] = useState('');
   const [recordTypeId, setRecordTypeId] = useState(null);
-  const [categoryId, setCategoryId] = useState(null);
+  const [categoryId, setCategoryId] = useState(idCategory || null);
   const [customFieldsDefs, setCustomFieldsDefs] = useState([]);
 
   const [sortBy, setSortBy] = useState('');
@@ -55,9 +56,14 @@ const TransactionList = () => {
   const itemsPerPage = 10;
 
   const [categoryInfo, setCategoryInfo] = useState(null);
+  const latestRequestId = useRef(0);
 
   useEffect(() => {
     setCurrentPage(1);
+    setTransactionRecords([]);
+    setTotalItems(0);
+    setTotalAmount(0);
+    setLoadError('');
   }, [monthlyRecordId]);
 
   const effectiveTableKey = `${TABLE_CONFIG_KEYS.TRANSACTIONS_RECORDS}_${
@@ -99,7 +105,10 @@ const TransactionList = () => {
   };
 
   const handleExport = async (format) => {
+    if (isExporting) return;
+
     try {
+      setIsExporting(true);
       const config = getMemorizedConfig();
       const columnOrder = (config?.columnOrder || []).filter(
         (c) => c !== 'actions'
@@ -148,6 +157,8 @@ const TransactionList = () => {
     } catch (error) {
       console.error('Erro na exportação:', error);
       setFlashMessage('Erro na exportação', 'error');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -159,6 +170,8 @@ const TransactionList = () => {
           const response = await ServiceCategory.getByIdCategory(catId);
           if (response.data.status === 'OK' && response.data.data) {
             setCategoryInfo(response.data.data);
+            setCategoryId(response.data.data.id || catId);
+            setRecordTypeId(response.data.data.record_type_id || null);
           }
         } catch (error) {
           console.error('Erro ao buscar informações da categoria:', error);
@@ -190,7 +203,7 @@ const TransactionList = () => {
     } else {
       setCustomFieldsDefs([]);
     }
-  }, [recordTypeId, categoryId]);
+  }, [recordTypeId, categoryId, setFlashMessage]);
 
   useEffect(() => {
     if (customFieldsDefs.length > 0 && transactionRecords.length > 0) {
@@ -247,7 +260,7 @@ const TransactionList = () => {
       ? [
           {
             key: 'amount',
-            label: 'Saldo Inicial',
+            label: 'Valor',
             render: (row) => formatCurrency(row.amount)
           }
         ]
@@ -272,12 +285,14 @@ const TransactionList = () => {
     render: (row, idx, { onEdit, onDelete }) => (
       <div className={styles.actionsCell}>
         <button
+          type="button"
           className={styles.editButton}
           onClick={(e) => {
             e.stopPropagation();
             onEdit(row.id);
           }}
-          title="Editar registro"
+          title="Editar transação"
+          aria-label={`Editar transação ${row.title}`}
           style={{
             backgroundColor: '#3b82f6'
           }}
@@ -285,12 +300,14 @@ const TransactionList = () => {
           <Edit size={16} />
         </button>
         <button
+          type="button"
           className={styles.deleteButton}
           onClick={(e) => {
             e.stopPropagation();
             onDelete(row.id);
           }}
-          title="Excluir registro"
+          title="Excluir transação"
+          aria-label={`Excluir transação ${row.title}`}
         >
           <Trash2 size={16} />
         </button>
@@ -302,7 +319,9 @@ const TransactionList = () => {
 
   useEffect(() => {
     const fetchTransactionsRecord = async () => {
+      const requestId = ++latestRequestId.current;
       setLoading(true);
+      setLoadError('');
       try {
         const adjustedSortBy = getAdjustedSortBy(sortBy);
         const filtersToSend = activeFilters
@@ -324,9 +343,10 @@ const TransactionList = () => {
             monthlyRecordId
           );
 
+        if (requestId !== latestRequestId.current) return;
+
         if (response.data.status === 'OK') {
           const result = response.data.data;
-          setStatus(response.data.status);
           setTotalAmount(result.totalAmount);
           setTotalItems(result.pagination?.total ?? result.transactions.length);
           setTransactionRecords(
@@ -340,30 +360,39 @@ const TransactionList = () => {
             setCategoryId(result.transactions[0].transaction.category_id);
           } else if (currentPage > 1 && result.pagination?.totalPages > 0) {
             setCurrentPage(result.pagination.totalPages);
-          } else {
-            setRecordTypeId(null);
-            setCategoryId(null);
           }
+        } else {
+          throw new Error('Resposta inválida ao carregar transações');
         }
       } catch (error) {
+        if (requestId !== latestRequestId.current) return;
         console.error('Erro ao buscar registros dos registros mensais:', error);
+        setLoadError(
+          'Não foi possível carregar as transações. Tente novamente.'
+        );
         setFlashMessage(
-          'Erro ao buscar registros dos registros mensais',
+          'Erro ao buscar transações',
           'error'
         );
       } finally {
-        setLoading(false);
+        if (requestId === latestRequestId.current) {
+          setLoading(false);
+        }
       }
     };
 
     fetchTransactionsRecord();
+    return () => {
+      latestRequestId.current += 1;
+    };
   }, [
     currentPage,
     sortBy,
     order,
     activeFilters,
     monthlyRecordId,
-    refreshTrigger
+    refreshTrigger,
+    setFlashMessage
   ]);
 
   const formatCurrency = (value) => {
@@ -377,7 +406,11 @@ const TransactionList = () => {
   };
 
   const formatDateTime = (date) =>
-    date ? new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR') : '-';
+    date
+      ? new Date(`${String(date).split('T')[0]}T00:00:00`).toLocaleDateString(
+          'pt-BR'
+        )
+      : '-';
 
   const handleSort = (key, direction) => {
     setCurrentPage(1);
@@ -399,15 +432,15 @@ const TransactionList = () => {
       await ServiceTransactionsRecord.deleteTransactionsRecord(
         transactionToDelete
       );
-      setFlashMessage('Registro mensal excluído com sucesso', 'success');
+      setFlashMessage('Transação excluída com sucesso', 'success');
       if (transactionRecords.length === 1 && currentPage > 1) {
         setCurrentPage((page) => page - 1);
       } else {
         setRefreshTrigger((trigger) => trigger + 1);
       }
     } catch (error) {
-      console.error('Erro ao excluir registro mensal:', error);
-      setFlashMessage('Erro ao excluir registro mensal', 'error');
+      console.error('Erro ao excluir transação:', error);
+      setFlashMessage('Erro ao excluir transação', 'error');
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
@@ -434,8 +467,6 @@ const TransactionList = () => {
         const response = await ServiceCategory.getByIdCategory(
           updatedDados.categoryId
         );
-        console.log('response berg', response);
-
         if (response.data.status === 'OK' && response.data.data) {
           updatedDados.recordTypeId = response.data.data.record_type_id;
 
@@ -461,10 +492,6 @@ const TransactionList = () => {
       dados: updatedDados
     });
   };
-  const handleSelectionChange = (selectedItems) => {
-    console.log('Itens selecionados:', selectedItems);
-  };
-
   const handleFiltersChange = (filters) => {
     setCurrentPage(1);
     setActiveFilters(filters);
@@ -498,12 +525,9 @@ const TransactionList = () => {
     ? { key: sortBy, direction: order }
     : { key: null, direction: null };
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  if (loading && transactionRecords.length === 0 && !status) {
-    return (
-      <LoadingSpinner message="Carregando registros dos registros mensais..." />
-    );
-  }
+  const hasTransactions = transactionRecords.length > 0;
+  const showInitialLoading = loading && !hasTransactions;
+  const showBlockingError = Boolean(loadError) && !hasTransactions;
 
   return (
     <div className={`${styles.container} ${styles[theme]}`}>
@@ -511,7 +535,7 @@ const TransactionList = () => {
         onBack={handleBack}
         onCreate={handleCreate}
         backButtonLabel="Voltar"
-        createButtonLabel="Novo Registro"
+        createButtonLabel="Nova transação"
       />
 
       <TableHeaderWithFilter
@@ -520,31 +544,66 @@ const TransactionList = () => {
         onFiltersChange={handleFiltersChange}
         isExportacao={true}
         onExport={handleExport}
+        isExporting={isExporting}
+        exportDisabled={loading || Boolean(loadError) || totalItems === 0}
       />
 
-      {transactionRecords.length === 0 && !loading ? (
-        <div className={`${styles.emptyState} ${styles[theme]}`}>
-          <p>Nenhum registros dos registro mensal encontrado.</p>
+      {loadError && (
+        <div className={styles.errorState} role="alert">
+          <span>{loadError}</span>
           <button
-            onClick={handleCreate}
-            className={styles.emptyStateButton}
-            style={{
-              backgroundColor:
-                emphasisColor ||
-                (theme === 'dark' ? 'rgb(20, 18, 129)' : '#007bff')
-            }}
+            type="button"
+            onClick={() => setRefreshTrigger((trigger) => trigger + 1)}
           >
-            Criar primeiro registro
+            Tentar novamente
           </button>
         </div>
+      )}
+
+      {loading && hasTransactions && (
+        <div className={styles.updatingState} role="status" aria-live="polite">
+          Atualizando transações...
+        </div>
+      )}
+
+      {showBlockingError ? null : showInitialLoading ? (
+        <div className={styles.loadingState} role="status">
+          <LoadingSpinner message="Carregando transações..." />
+        </div>
+      ) : !hasTransactions ? (
+        <div className={`${styles.emptyState} ${styles[theme]}`}>
+          <p className={styles.emptyStateTitle}>
+            {activeFilters.length > 0
+              ? 'Nenhuma transação corresponde aos filtros aplicados.'
+              : 'Nenhuma transação cadastrada neste registro mensal.'}
+          </p>
+          <p className={styles.emptyStateText}>
+            {activeFilters.length > 0
+              ? 'Ajuste ou limpe os filtros para visualizar outros resultados.'
+              : 'Cadastre a primeira transação para começar.'}
+          </p>
+          {activeFilters.length === 0 && (
+            <button
+              type="button"
+              onClick={handleCreate}
+              className={styles.emptyStateButton}
+              style={{
+                backgroundColor:
+                  emphasisColor ||
+                  (theme === 'dark' ? 'rgb(20, 18, 129)' : '#007bff')
+              }}
+            >
+              Criar primeira transação
+            </button>
+          )}
+        </div>
       ) : (
-        <>
+        <div aria-busy={loading}>
           <TableWithDate
             columns={columns}
             data={transactionRecords}
             selectable={false}
             reorderable={true}
-            onSelectionChange={handleSelectionChange}
             onEdit={handleEdit}
             onDelete={handleDelete}
             sortConfig={sortConfig}
@@ -567,8 +626,9 @@ const TransactionList = () => {
             totalItems={totalItems}
             itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
+            disabled={loading}
           />
-        </>
+        </div>
       )}
 
       <ConfirmModal
@@ -579,7 +639,7 @@ const TransactionList = () => {
         }}
         onConfirm={handleDeleteRecord}
         title="Confirmar exclusão"
-        message="Tem certeza que deseja excluir este registro dos registro mensal? Esta ação não pode ser desfeita e todas as transações associadas também serão removidas."
+        message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
         confirmText="Sim, excluir"
         cancelText="Cancelar"
         danger={true}

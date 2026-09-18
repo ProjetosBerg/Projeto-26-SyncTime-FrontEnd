@@ -8,12 +8,20 @@ const Pagination = ({
   totalPages, 
   totalItems, 
   itemsPerPage,
-  onPageChange 
+  onPageChange,
+  disabled = false
 }) => {
   const { theme } = useTheme();
   const { emphasisColor } = useEmphasisColor();
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  const changePage = (page) => {
+    if (disabled || page < 1 || page > totalPages || page === currentPage) {
+      return;
+    }
+    onPageChange(page);
+  };
 
   const pageNumbers = [];
   if (totalPages > 0) {
@@ -32,16 +40,22 @@ const Pagination = ({
   }
 
   return (
-    <div className={`${styles.paginationContainer} ${styles[theme]}`}>
+    <nav
+      className={`${styles.paginationContainer} ${styles[theme]}`}
+      aria-label="Paginação"
+      aria-busy={disabled}
+    >
       <div className={styles.paginationInfo}>
         Mostrando {startItem}–{endItem} de {totalItems} registros
       </div>
       <div className={styles.paginationButtons}>
         <button
           className={styles.paginationButton}
-          onClick={() => onPageChange(1)}
-          disabled={currentPage === 1}
+          type="button"
+          onClick={() => changePage(1)}
+          disabled={disabled || currentPage <= 1}
           title="Primeira página"
+          aria-label="Ir para a primeira página"
           style={{
             '--hover-border-color': emphasisColor || '#0ea5e9',
             '--hover-text-color': emphasisColor || '#0ea5e9'
@@ -51,9 +65,11 @@ const Pagination = ({
         </button>
         <button
           className={styles.paginationButton}
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          type="button"
+          onClick={() => changePage(currentPage - 1)}
+          disabled={disabled || currentPage <= 1}
           title="Página anterior"
+          aria-label="Ir para a página anterior"
           style={{
             '--hover-border-color': emphasisColor || '#0ea5e9',
             '--hover-text-color': emphasisColor || '#0ea5e9'
@@ -65,8 +81,12 @@ const Pagination = ({
           <button
             key={page}
             className={`${styles.paginationButton} ${currentPage === page ? styles.activePage : ''}`}
-            onClick={() => onPageChange(page)}
+            type="button"
+            onClick={() => changePage(page)}
+            disabled={disabled}
             title={`Ir para página ${page}`}
+            aria-label={`Ir para a página ${page}`}
+            aria-current={currentPage === page ? 'page' : undefined}
             style={currentPage === page ? {
               backgroundColor: emphasisColor || '#0ea5e9',
               borderColor: emphasisColor || '#0ea5e9',
@@ -81,9 +101,11 @@ const Pagination = ({
         ))}
         <button
           className={styles.paginationButton}
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          type="button"
+          onClick={() => changePage(currentPage + 1)}
+          disabled={disabled || totalPages === 0 || currentPage >= totalPages}
           title="Próxima página"
+          aria-label="Ir para a próxima página"
           style={{
             '--hover-border-color': emphasisColor || '#0ea5e9',
             '--hover-text-color': emphasisColor || '#0ea5e9'
@@ -93,9 +115,11 @@ const Pagination = ({
         </button>
         <button
           className={styles.paginationButton}
-          onClick={() => onPageChange(totalPages)}
-          disabled={currentPage === totalPages}
+          type="button"
+          onClick={() => changePage(totalPages)}
+          disabled={disabled || totalPages === 0 || currentPage >= totalPages}
           title="Última página"
+          aria-label="Ir para a última página"
           style={{
             '--hover-border-color': emphasisColor || '#0ea5e9',
             '--hover-text-color': emphasisColor || '#0ea5e9'
@@ -104,7 +128,7 @@ const Pagination = ({
           <ChevronsRight size={16} />
         </button>
       </div>
-    </div>
+    </nav>
   );
 };
 
