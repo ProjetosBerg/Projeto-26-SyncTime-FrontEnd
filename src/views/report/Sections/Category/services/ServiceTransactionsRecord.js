@@ -1,19 +1,33 @@
 import api from '../../../../../services/api';
 class ServiceTransactionsRecord {
-  getByAllTransactionsRecord(sortBy = '', order = '', filters = [], monthlyRecordId) {
+  getByAllTransactionsRecord(
+    page = 1,
+    limit = 10,
+    sortBy = '',
+    order = '',
+    filters = [],
+    monthlyRecordId
+  ) {
     const params = new URLSearchParams();
-   
 
     if (filters && filters.length > 0) {
       params.append('filters', JSON.stringify(filters));
     }
 
     return api.get(`/transactions/userId?${params.toString()}`, {
-      params: { sortBy, order, monthlyRecordId }
+      params: { page, limit, sortBy, order, monthlyRecordId }
     });
   }
 
-  exportTransactions(monthlyRecordId, format, sortBy, order, filters, columnOrder, visibleColumns) {
+  exportTransactions(
+    monthlyRecordId,
+    format,
+    sortBy,
+    order,
+    filters,
+    columnOrder,
+    visibleColumns
+  ) {
     const params = new URLSearchParams({
       monthlyRecordId,
       format
@@ -51,7 +65,6 @@ class ServiceTransactionsRecord {
   deleteTransactionsRecord(id) {
     return api.delete(`/transactions/delete/${id}`);
   }
-
 }
 
 export default new ServiceTransactionsRecord();

@@ -1,6 +1,6 @@
 // ⚙️ Bibliotecas externas
 import { useEffect, useState } from 'react';
-import { Edit,  Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { useHistory, useLocation } from 'react-router-dom';
 import useFlashMessage from '../../../../../hooks/userFlashMessage';
 import { useTheme } from '../../../../../hooks/useTheme';
@@ -19,6 +19,7 @@ import {
   TABLE_CONFIG_KEYS
 } from '../../../../../hooks/useMemorizeTableColumns';
 import TableFooter from '../../../../../components/footer/TableFooter';
+import Pagination from '../../../../../components/pagination/Pagination';
 
 // 💅 Estilos
 
@@ -49,8 +50,15 @@ const TransactionList = () => {
   const [order, setOrder] = useState('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
   const [categoryInfo, setCategoryInfo] = useState(null);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [monthlyRecordId]);
 
   const effectiveTableKey = `${TABLE_CONFIG_KEYS.TRANSACTIONS_RECORDS}_${
     idCategory || categoryId || 'general'
@@ -74,7 +82,9 @@ const TransactionList = () => {
   const filterColumnsBase = [
     { id: 'title', label: 'Título', type: 'text' },
     { id: 'description', label: 'Descrição', type: 'text' },
-    ...(showFinancialColumns ? [{ id: 'amount', label: 'Valor', type: 'number' }] : []),
+    ...(showFinancialColumns
+      ? [{ id: 'amount', label: 'Valor', type: 'number' }]
+      : []),
     { id: 'transaction_date', label: 'Data da Transação', type: 'date' },
     { id: 'created_at', label: 'Data de Criação', type: 'date' },
     { id: 'updated_at', label: 'Última Atualização', type: 'date' }
@@ -306,6 +316,8 @@ const TransactionList = () => {
 
         const response =
           await ServiceTransactionsRecord.getByAllTransactionsRecord(
+            currentPage,
+            itemsPerPage,
             adjustedSortBy,
             order,
             filtersToSend,
@@ -313,17 +325,21 @@ const TransactionList = () => {
           );
 
         if (response.data.status === 'OK') {
+          const result = response.data.data;
           setStatus(response.data.status);
-          setTotalAmount(response.data.data.totalAmount);
+          setTotalAmount(result.totalAmount);
+          setTotalItems(result.pagination?.total ?? result.transactions.length);
           setTransactionRecords(
-            response.data.data.transactions.map((item) => ({
+            result.transactions.map((item) => ({
               ...item.transaction,
               customFields: item.customFields
             }))
           );
-          if (response.data.data.length > 0) {
-            setRecordTypeId(response.data.data[0].recordTypeId);
-            setCategoryId(response.data.data[0].transaction.category_id);
+          if (result.transactions.length > 0) {
+            setRecordTypeId(result.transactions[0].recordTypeId);
+            setCategoryId(result.transactions[0].transaction.category_id);
+          } else if (currentPage > 1 && result.pagination?.totalPages > 0) {
+            setCurrentPage(result.pagination.totalPages);
           } else {
             setRecordTypeId(null);
             setCategoryId(null);
@@ -341,7 +357,14 @@ const TransactionList = () => {
     };
 
     fetchTransactionsRecord();
-  }, [sortBy, order, activeFilters, monthlyRecordId, refreshTrigger]);
+  }, [
+    currentPage,
+    sortBy,
+    order,
+    activeFilters,
+    monthlyRecordId,
+    refreshTrigger
+  ]);
 
   const formatCurrency = (value) => {
     if (value === null) return '0,00';
@@ -357,6 +380,7 @@ const TransactionList = () => {
     date ? new Date(`${date}T00:00:00`).toLocaleDateString('pt-BR') : '-';
 
   const handleSort = (key, direction) => {
+    setCurrentPage(1);
     setSortBy(direction ? key : '');
     setOrder(direction || '');
   };
@@ -376,39 +400,10 @@ const TransactionList = () => {
         transactionToDelete
       );
       setFlashMessage('Registro mensal excluído com sucesso', 'success');
-
-      const adjustedSortBy = getAdjustedSortBy(sortBy);
-      const filtersToSend = activeFilters
-        .filter((filter) => filter.value && filter.value.trim() !== '')
-        .map((filter) => ({
-          field: filter.column,
-          operator: filter.operator,
-          value: filter.value,
-          value2: filter.value2 || null
-        }));
-
-      const response =
-        await ServiceTransactionsRecord.getByAllTransactionsRecord(
-          adjustedSortBy,
-          order,
-          filtersToSend,
-          monthlyRecordId
-        );
-
-      if (response.data.status === 'OK') {
-        setTransactionRecords(
-          response.data.data.transactions.map((item) => ({
-            ...item.transaction,
-            customFields: item.customFields
-          }))
-        );
-        if (response.data.data.length > 0) {
-          setRecordTypeId(response.data.data[0].recordTypeId);
-          setCategoryId(response.data.data[0].transaction.category_id);
-        } else {
-          setRecordTypeId(null);
-          setCategoryId(null);
-        }
+      if (transactionRecords.length === 1 && currentPage > 1) {
+        setCurrentPage((page) => page - 1);
+      } else {
+        setRefreshTrigger((trigger) => trigger + 1);
       }
     } catch (error) {
       console.error('Erro ao excluir registro mensal:', error);
@@ -471,6 +466,7 @@ const TransactionList = () => {
   };
 
   const handleFiltersChange = (filters) => {
+    setCurrentPage(1);
     setActiveFilters(filters);
   };
 
@@ -501,7 +497,7 @@ const TransactionList = () => {
   const sortConfig = sortBy
     ? { key: sortBy, direction: order }
     : { key: null, direction: null };
-
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   if (loading && transactionRecords.length === 0 && !status) {
     return (
@@ -561,9 +557,16 @@ const TransactionList = () => {
             onUpdateRecord={editTransactionRecord}
             tableKey={TABLE_CONFIG_KEYS.TRANSACTIONS_RECORDS}
           />
-          <TableFooter 
-            numRecords={transactionRecords.length} 
-            totalAmount={showFinancialColumns ? totalAmount : undefined} 
+          <TableFooter
+            numRecords={totalItems}
+            totalAmount={showFinancialColumns ? totalAmount : undefined}
+          />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
           />
         </>
       )}
