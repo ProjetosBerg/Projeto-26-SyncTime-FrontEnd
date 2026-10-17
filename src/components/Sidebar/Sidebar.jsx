@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   FaHome,
+  FaCalendarDay,
   FaChartBar,
   FaFileAlt,
   FaStickyNote,
@@ -226,6 +227,13 @@ function Sidebar({ onToggle }) {
               <Link to="/inicio" className={`${styles.menuItem} ${isActive('/inicio')}`} onClick={closeMobileMenu}>
                 <FaHome className={styles.icon} />
                 {showExpanded && <span>Início</span>}
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/meu-dia" className={`${styles.menuItem} ${isActive('/meu-dia')}`} onClick={closeMobileMenu}>
+                <FaCalendarDay className={styles.icon} />
+                {showExpanded && <span>Meu Dia</span>}
               </Link>
             </li>
 

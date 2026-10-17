@@ -36,6 +36,7 @@ import ReportMonthlyRecordForm from './views/report/Sections/Category/Form/Repor
 import TransactionForm from './views/report/Sections/Category/Transaction/Form/TransactionForm';
 import Calendar from './views/notes/Calendar/Calendar';
 import DashboardCategoryManager from './views/dashboard/category/dashoardCategoryManager';
+import MyDay from './views/myDay/MyDay';
 
 const APP_NAME = 'SyncTime';
 
@@ -45,6 +46,7 @@ const pageTitles = [
   { path: '/register', exact: true, title: 'Cadastro' },
   { path: '/esqueceu-senha', exact: true, title: 'Recuperar senha' },
   { path: '/inicio', exact: true, title: 'Inicio' },
+  { path: '/meu-dia', exact: true, title: 'Meu Dia' },
   { path: '/dashboard/categoria', exact: true, title: 'Dashboard' },
   { path: '/anotacoes', exact: true, title: 'Anotacoes' },
   { path: '/configuracoes', exact: true, title: 'Configuracoes' },
@@ -146,6 +148,7 @@ function Layout({ children }) {
 
   const protectedPages = [
     '/inicio',
+    '/meu-dia',
     '/dashboard',
     '/relatorios',
     '/anotacoes',
@@ -253,6 +256,10 @@ function App() {
 
                 <ProtectedRoute path="/inicio">
                   <Home />
+                </ProtectedRoute>
+
+                <ProtectedRoute exact path="/meu-dia">
+                  <MyDay />
                 </ProtectedRoute>
 
                 {/* Rotas Configuração do sistema */}
