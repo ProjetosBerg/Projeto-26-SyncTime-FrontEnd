@@ -12,6 +12,20 @@ import CreateModalNote from './Form/CreateModalNote';
 import ServiceNotes from './services/ServiceNotes';
 import SummaryModal from './Modal/SummaryModal';
 
+const getDateKey = (value) => {
+  if (!value) return null;
+
+  if (typeof value === 'string') {
+    const dateAtStart = value.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (dateAtStart) return dateAtStart[1];
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? null
+    : date.toISOString().split('T')[0];
+};
+
 const Calendar = () => {
   const { theme } = useTheme();
   const { emphasisColor } = useEmphasisColor();
@@ -217,29 +231,46 @@ const Calendar = () => {
         const routinesData = response.data.data || [];
         const grouped = {};
         routinesData.forEach((routine) => {
-          const routineDate = new Date(routine.created_at)
-            .toISOString()
-            .split('T')[0];
+          const routineDate = getDateKey(routine.created_at);
           const title =
             routine.type === 'periodo'
               ? routine.period
               : routine.type === 'resumo'
               ? 'Resumo do Dia'
               : routine.type;
-          const processedRoutine = {
-            id: routine.id,
-            title,
-            content: '',
-            time: new Date(routine.created_at).toLocaleTimeString('pt-BR', {
-              hour: '2-digit',
-              minute: '2-digit'
-            }),
-            notes: routine.notes || []
-          };
-          if (!grouped[routineDate]) {
-            grouped[routineDate] = [];
+          const notesByDate = (routine.notes || []).reduce(
+            (dates, note) => {
+              const noteDate = getDateKey(note.dateOfNote) || routineDate;
+              if (!noteDate) return dates;
+
+              if (!dates[noteDate]) dates[noteDate] = [];
+              dates[noteDate].push(note);
+              return dates;
+            },
+            {}
+          );
+          const routineDates = Object.keys(notesByDate);
+
+          if (routineDates.length === 0 && routineDate) {
+            routineDates.push(routineDate);
+            notesByDate[routineDate] = [];
           }
-          grouped[routineDate].push(processedRoutine);
+
+          routineDates.forEach((dateKey) => {
+            const processedRoutine = {
+              id: routine.id,
+              title,
+              content: '',
+              time: new Date(routine.created_at).toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+              }),
+              notes: notesByDate[dateKey]
+            };
+
+            if (!grouped[dateKey]) grouped[dateKey] = [];
+            grouped[dateKey].push(processedRoutine);
+          });
         });
         Object.keys(grouped).forEach((dateKey) => {
           grouped[dateKey] = sortNotes(grouped[dateKey]);

@@ -38,13 +38,13 @@ const STATUS_CONFIG = {
 };
 
 const WEEK_DAYS = [
-  { value: 0, label: 'D', name: 'Domingo' },
-  { value: 1, label: 'S', name: 'Segunda-feira' },
-  { value: 2, label: 'T', name: 'Terça-feira' },
-  { value: 3, label: 'Q', name: 'Quarta-feira' },
-  { value: 4, label: 'Q', name: 'Quinta-feira' },
-  { value: 5, label: 'S', name: 'Sexta-feira' },
-  { value: 6, label: 'S', name: 'Sábado' }
+  { value: 0, label: 'Dom', name: 'Domingo' },
+  { value: 1, label: 'Seg', name: 'Segunda-feira' },
+  { value: 2, label: 'Ter', name: 'Terça-feira' },
+  { value: 3, label: 'Qua', name: 'Quarta-feira' },
+  { value: 4, label: 'Qui', name: 'Quinta-feira' },
+  { value: 5, label: 'Sex', name: 'Sexta-feira' },
+  { value: 6, label: 'Sáb', name: 'Sábado' }
 ];
 
 const formatDateForInput = (value) => {
@@ -137,7 +137,7 @@ const CreateModalNote = ({
       userId,
       dateOfNote: formatDateForInput(dateOfNote),
       hasRecurrence: false,
-      recurrenceFrequency: 'daily',
+      recurrenceFrequency: 'weekly',
       recurrenceInterval: 1,
       recurrenceEndDate: getDefaultRecurrenceEndDate(dateOfNote),
       recurrenceWeekDays: [getWeekDay(dateOfNote)]
@@ -252,7 +252,7 @@ const CreateModalNote = ({
         userId: noteToEdit.userId || userId,
         dateOfNote: formatDateForInput(dateOfNote),
         hasRecurrence: false,
-        recurrenceFrequency: 'daily',
+        recurrenceFrequency: 'weekly',
         recurrenceInterval: 1,
         recurrenceEndDate: getDefaultRecurrenceEndDate(dateOfNote),
         recurrenceWeekDays: [getWeekDay(dateOfNote)]
@@ -272,7 +272,7 @@ const CreateModalNote = ({
         userId,
         dateOfNote: formatDateForInput(dateOfNote),
         hasRecurrence: false,
-        recurrenceFrequency: 'daily',
+        recurrenceFrequency: 'weekly',
         recurrenceInterval: 1,
         recurrenceEndDate: getDefaultRecurrenceEndDate(dateOfNote),
         recurrenceWeekDays: [getWeekDay(dateOfNote)]
@@ -852,7 +852,7 @@ const CreateModalNote = ({
                       <div className={styles.recurrenceGrid}>
                         <div className={styles.formGroup}>
                           <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="recurrenceFrequency">
-                            Frequência *
+                            Como deseja repetir? *
                           </label>
                           <Controller
                             name="recurrenceFrequency"
@@ -864,9 +864,9 @@ const CreateModalNote = ({
                                 className={`${styles.formSelect} ${styles[theme]} ${errors.recurrenceFrequency ? styles.error : ''}`}
                                 style={{ '--focus-color': emphasisColor || '#667eea' }}
                               >
-                                <option value="daily">Diariamente</option>
-                                <option value="weekly">Semanalmente</option>
-                                <option value="monthly">Mensalmente</option>
+                                <option value="weekly">Dias específicos da semana</option>
+                                <option value="daily">Todos os dias</option>
+                                <option value="monthly">Todo mês</option>
                               </select>
                             )}
                           />
@@ -936,7 +936,12 @@ const CreateModalNote = ({
 
                       {recurrenceFrequency === 'weekly' && (
                         <div className={styles.weekDaysGroup}>
-                          <span className={`${styles.formLabel} ${styles[theme]}`}>Dias da semana *</span>
+                          <span className={`${styles.formLabel} ${styles[theme]}`}>
+                            Em quais dias? *
+                          </span>
+                          <small className={styles.weekDaysHint}>
+                            Selecione um ou mais dias da semana.
+                          </small>
                           <Controller
                             name="recurrenceWeekDays"
                             control={control}
