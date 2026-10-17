@@ -37,6 +37,56 @@ const STATUS_CONFIG = {
   }
 };
 
+const WEEK_DAYS = [
+  { value: 0, label: 'D', name: 'Domingo' },
+  { value: 1, label: 'S', name: 'Segunda-feira' },
+  { value: 2, label: 'T', name: 'Terça-feira' },
+  { value: 3, label: 'Q', name: 'Quarta-feira' },
+  { value: 4, label: 'Q', name: 'Quinta-feira' },
+  { value: 5, label: 'S', name: 'Sexta-feira' },
+  { value: 6, label: 'S', name: 'Sábado' }
+];
+
+const formatDateForInput = (value) => {
+  if (!value) return '';
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+    return value.slice(0, 10);
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getWeekDay = (date) => {
+  const formattedDate = formatDateForInput(date);
+  return formattedDate
+    ? new Date(`${formattedDate}T00:00:00`).getDay()
+    : new Date().getDay();
+};
+
+const getMaxRecurrenceDate = (date) => {
+  const formattedDate = formatDateForInput(date);
+  if (!formattedDate) return '';
+
+  const maximum = new Date(`${formattedDate}T00:00:00`);
+  maximum.setDate(maximum.getDate() + 730);
+  return formatDateForInput(maximum);
+};
+
+const getDefaultRecurrenceEndDate = (date) => {
+  const formattedDate = formatDateForInput(date);
+  if (!formattedDate) return '';
+
+  const endDate = new Date(`${formattedDate}T00:00:00`);
+  endDate.setDate(endDate.getDate() + 30);
+  return formatDateForInput(endDate);
+};
+
 
 const CreateModalNote = ({
   isOpen,
@@ -69,6 +119,7 @@ const CreateModalNote = ({
     control,
     handleSubmit,
     reset,
+    watch,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(createNotesValidationSchema),
@@ -83,9 +134,18 @@ const CreateModalNote = ({
       startTime: '',
       endTime: '',
       routine_id: selectedRoutine?.id || '',
-      userId
+      userId,
+      dateOfNote: formatDateForInput(dateOfNote),
+      hasRecurrence: false,
+      recurrenceFrequency: 'daily',
+      recurrenceInterval: 1,
+      recurrenceEndDate: getDefaultRecurrenceEndDate(dateOfNote),
+      recurrenceWeekDays: [getWeekDay(dateOfNote)]
     }
   });
+
+  const hasRecurrence = watch('hasRecurrence');
+  const recurrenceFrequency = watch('recurrenceFrequency');
 
   const fetchCategories = async () => {
     if (categories.length > 0) return; 
@@ -189,7 +249,13 @@ const CreateModalNote = ({
         startTime: noteToEdit.startTime ? noteToEdit.startTime.slice(0, 5) : '',
         endTime: noteToEdit.endTime ? noteToEdit.endTime.slice(0, 5) : '',
         routine_id: noteToEdit.routine_id || selectedRoutine?.id || '',
-        userId: noteToEdit.userId || userId
+        userId: noteToEdit.userId || userId,
+        dateOfNote: formatDateForInput(dateOfNote),
+        hasRecurrence: false,
+        recurrenceFrequency: 'daily',
+        recurrenceInterval: 1,
+        recurrenceEndDate: getDefaultRecurrenceEndDate(dateOfNote),
+        recurrenceWeekDays: [getWeekDay(dateOfNote)]
       });
     } else {
       reset({
@@ -203,12 +269,18 @@ const CreateModalNote = ({
         startTime: '',
         endTime: '',
         routine_id: selectedRoutine?.id || '',
-        userId
+        userId,
+        dateOfNote: formatDateForInput(dateOfNote),
+        hasRecurrence: false,
+        recurrenceFrequency: 'daily',
+        recurrenceInterval: 1,
+        recurrenceEndDate: getDefaultRecurrenceEndDate(dateOfNote),
+        recurrenceWeekDays: [getWeekDay(dateOfNote)]
       });
       setComments([]);
       setNewComment('');
     }
-  }, [isOpen, noteToEdit, selectedRoutine?.id, userId, reset, formInitialized]);
+  }, [isOpen, noteToEdit, selectedRoutine?.id, userId, reset, formInitialized, dateOfNote]);
 
   useEffect(() => {
     if (isOpen && categories.length > 0 && !formInitialized) {
@@ -291,6 +363,17 @@ const CreateModalNote = ({
         throw new Error('ID da rotina é obrigatório');
       }
 
+      const recurrence = !noteToEdit && data.hasRecurrence
+        ? {
+            frequency: data.recurrenceFrequency,
+            interval: Number(data.recurrenceInterval),
+            endDate: data.recurrenceEndDate,
+            ...(data.recurrenceFrequency === 'weekly' && {
+              weekDays: [...data.recurrenceWeekDays].sort((a, b) => a - b)
+            })
+          }
+        : undefined;
+
       const payload = {
         status: data.status,
         collaborators: data.collaborators || [],
@@ -304,15 +387,22 @@ const CreateModalNote = ({
         comments: comments.length > 0 ? comments : null,
         routine_id: data.routine_id,
         userId: data.userId,
-        dateOfNote: dateOfNote
+        dateOfNote: dateOfNote,
+        ...(recurrence && { recurrence })
       };
 
       if (noteToEdit) {
          await ServiceNotes.editNotes(noteToEdit.id, payload);
         setFlashMessage('Anotação atualizada com sucesso', 'success');
       } else {
-         await ServiceNotes.createNotes(payload);
-        setFlashMessage('Anotação criada com sucesso', 'success');
+        const response = await ServiceNotes.createNotes(payload);
+        const occurrenceCount = response.data?.data?.occurrenceCount;
+        setFlashMessage(
+          occurrenceCount > 1
+            ? `Série criada com ${occurrenceCount} ocorrências`
+            : 'Anotação criada com sucesso',
+          'success'
+        );
       }
 
       if (onRefresh) onRefresh();
@@ -393,6 +483,13 @@ const CreateModalNote = ({
 
   const showFooter = !isMobile || (isMobile && !showComments);
   const isEditMode = !!noteToEdit;
+  const recurrenceStartDate = formatDateForInput(dateOfNote);
+  const recurrenceMaxDate = getMaxRecurrenceDate(dateOfNote);
+  const recurrenceUnit = {
+    daily: 'dia(s)',
+    weekly: 'semana(s)',
+    monthly: 'mês(es)'
+  }[recurrenceFrequency] || 'período(s)';
   const modalTitle = isEditMode ? 'Editar Anotação' : 'Nova Anotação';
 
   const priorityOptions = [
@@ -713,6 +810,176 @@ const CreateModalNote = ({
                   </div>
                 </div>
               </div>
+
+              {!isEditMode && (
+                <div className={`${styles.formSection} ${styles[theme]}`}>
+                  <h3
+                    className={`${styles.sectionTitle} ${styles[theme]}`}
+                    style={{ '--section-bar-color': emphasisColor || '#667eea' }}
+                  >
+                    Recorrência
+                  </h3>
+
+                  <Controller
+                    name="hasRecurrence"
+                    control={control}
+                    render={({ field }) => (
+                      <label
+                        className={`${styles.recurrenceToggle} ${styles[theme]}`}
+                        style={{ '--focus-color': emphasisColor || '#667eea' }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={Boolean(field.value)}
+                          onChange={(event) => field.onChange(event.target.checked)}
+                        />
+                        <span
+                          className={styles.toggleTrack}
+                          style={{ '--toggle-color': emphasisColor || '#667eea' }}
+                        >
+                          <span />
+                        </span>
+                        <span className={styles.toggleText}>
+                          <strong>Repetir esta atividade</strong>
+                          <small>Crie automaticamente as próximas ocorrências.</small>
+                        </span>
+                      </label>
+                    )}
+                  />
+
+                  {hasRecurrence && (
+                    <div className={`${styles.recurrencePanel} ${styles[theme]}`}>
+                      <div className={styles.recurrenceGrid}>
+                        <div className={styles.formGroup}>
+                          <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="recurrenceFrequency">
+                            Frequência *
+                          </label>
+                          <Controller
+                            name="recurrenceFrequency"
+                            control={control}
+                            render={({ field }) => (
+                              <select
+                                {...field}
+                                id="recurrenceFrequency"
+                                className={`${styles.formSelect} ${styles[theme]} ${errors.recurrenceFrequency ? styles.error : ''}`}
+                                style={{ '--focus-color': emphasisColor || '#667eea' }}
+                              >
+                                <option value="daily">Diariamente</option>
+                                <option value="weekly">Semanalmente</option>
+                                <option value="monthly">Mensalmente</option>
+                              </select>
+                            )}
+                          />
+                          <ErrorMessage
+                            errors={errors}
+                            name="recurrenceFrequency"
+                            render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                          />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                          <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="recurrenceInterval">
+                            Repetir a cada *
+                          </label>
+                          <div className={styles.intervalField}>
+                            <Controller
+                              name="recurrenceInterval"
+                              control={control}
+                              render={({ field }) => (
+                                <input
+                                  {...field}
+                                  type="number"
+                                  id="recurrenceInterval"
+                                  min="1"
+                                  max="30"
+                                  className={`${styles.formInput} ${styles[theme]} ${errors.recurrenceInterval ? styles.error : ''}`}
+                                  style={{ '--focus-color': emphasisColor || '#667eea' }}
+                                />
+                              )}
+                            />
+                            <span>{recurrenceUnit}</span>
+                          </div>
+                          <ErrorMessage
+                            errors={errors}
+                            name="recurrenceInterval"
+                            render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                          />
+                        </div>
+
+                        <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+                          <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="recurrenceEndDate">
+                            Repetir até *
+                          </label>
+                          <Controller
+                            name="recurrenceEndDate"
+                            control={control}
+                            render={({ field }) => (
+                              <input
+                                {...field}
+                                type="date"
+                                id="recurrenceEndDate"
+                                min={recurrenceStartDate}
+                                max={recurrenceMaxDate}
+                                className={`${styles.formInput} ${styles[theme]} ${errors.recurrenceEndDate ? styles.error : ''}`}
+                                style={{ '--focus-color': emphasisColor || '#667eea' }}
+                              />
+                            )}
+                          />
+                          <ErrorMessage
+                            errors={errors}
+                            name="recurrenceEndDate"
+                            render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                          />
+                          <small className={styles.fieldHint}>Limite máximo de dois anos.</small>
+                        </div>
+                      </div>
+
+                      {recurrenceFrequency === 'weekly' && (
+                        <div className={styles.weekDaysGroup}>
+                          <span className={`${styles.formLabel} ${styles[theme]}`}>Dias da semana *</span>
+                          <Controller
+                            name="recurrenceWeekDays"
+                            control={control}
+                            render={({ field }) => (
+                              <div className={styles.weekDays} role="group" aria-label="Dias da semana">
+                                {WEEK_DAYS.map((day) => {
+                                  const selected = (field.value || []).includes(day.value);
+                                  return (
+                                    <button
+                                      key={day.value}
+                                      type="button"
+                                      title={day.name}
+                                      aria-label={day.name}
+                                      aria-pressed={selected}
+                                      className={selected ? styles.weekDaySelected : ''}
+                                      style={selected ? { backgroundColor: emphasisColor || '#667eea' } : {}}
+                                      onClick={() => {
+                                        const current = field.value || [];
+                                        field.onChange(
+                                          selected
+                                            ? current.filter((value) => value !== day.value)
+                                            : [...current, day.value].sort((a, b) => a - b)
+                                        );
+                                      }}
+                                    >
+                                      {day.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          />
+                          <ErrorMessage
+                            errors={errors}
+                            name="recurrenceWeekDays"
+                            render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className={`${styles.sidebar} ${styles[theme]} ${showComments && isMobile ? styles.expanded : ''}`}>
@@ -788,7 +1055,13 @@ const CreateModalNote = ({
                 disabled={loading}
                 style={{ backgroundColor: primaryButtonColor }}
               >
-                {loading ? 'Salvando...' : (isEditMode ? 'Atualizar' : 'Salvar Anotação')}
+                {loading
+                  ? 'Salvando...'
+                  : isEditMode
+                    ? 'Atualizar'
+                    : hasRecurrence
+                      ? 'Criar recorrência'
+                      : 'Salvar Anotação'}
               </button>
             </div>
           )}

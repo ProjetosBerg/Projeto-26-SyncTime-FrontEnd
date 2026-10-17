@@ -431,6 +431,173 @@
     margin-bottom: 0.5rem;
 }
 
+.recurrenceToggle {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 1rem;
+    border: 2px solid;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.recurrenceToggle.light {
+    border-color: #e5e7eb;
+    background: #ffffff;
+}
+
+.recurrenceToggle.dark {
+    border-color: #334155;
+    background: #0f172a;
+}
+
+.recurrenceToggle:hover {
+    border-color: var(--focus-color, #6366f1);
+}
+
+.recurrenceToggle input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.toggleTrack {
+    width: 48px;
+    height: 26px;
+    padding: 3px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: #94a3b8;
+    transition: background-color 0.2s ease;
+}
+
+.toggleTrack > span {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 2px 5px rgba(15, 23, 42, 0.25);
+    transition: transform 0.2s ease;
+}
+
+.recurrenceToggle input:checked + .toggleTrack {
+    background: var(--toggle-color, #6366f1);
+}
+
+.recurrenceToggle input:checked + .toggleTrack > span {
+    transform: translateX(22px);
+}
+
+.recurrenceToggle input:focus-visible + .toggleTrack {
+    outline: 3px solid color-mix(in srgb, var(--toggle-color, #6366f1) 35%, transparent);
+    outline-offset: 3px;
+}
+
+.toggleText {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.toggleText strong {
+    font-size: 0.95rem;
+}
+
+.toggleText small,
+.fieldHint {
+    color: #64748b;
+    font-size: 0.8rem;
+    line-height: 1.35;
+}
+
+.recurrencePanel {
+    margin-top: 1rem;
+    padding: 1.25rem;
+    border: 1px solid;
+    border-radius: 12px;
+    animation: fadeInUp 0.25s ease-out;
+}
+
+.recurrencePanel.light {
+    border-color: #e5e7eb;
+    background: #f8fafc;
+}
+
+.recurrencePanel.dark {
+    border-color: #334155;
+    background: rgba(15, 23, 42, 0.7);
+}
+
+.recurrenceGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.intervalField {
+    display: grid;
+    grid-template-columns: minmax(80px, 110px) 1fr;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.intervalField > span {
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.fieldHint {
+    margin-top: 0.45rem;
+}
+
+.weekDaysGroup {
+    margin-top: 1.25rem;
+}
+
+.weekDaysGroup > .formLabel {
+    display: block;
+}
+
+.weekDays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(38px, 1fr));
+    gap: 0.5rem;
+}
+
+.weekDays button {
+    min-width: 38px;
+    min-height: 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: transparent;
+    color: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.weekDays button:hover {
+    border-color: var(--focus-color, #6366f1);
+    transform: translateY(-1px);
+}
+
+.weekDays button.weekDaySelected {
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+}
+
+.recurrencePanel.dark .weekDays button:not(.weekDaySelected) {
+    border-color: #475569;
+    color: #cbd5e1;
+}
+
 .errorMessage {
     color: #ef4444;
     font-size: 0.8125rem;
@@ -932,6 +1099,10 @@
         grid-template-columns: 1fr;
     }
 
+    .recurrenceGrid {
+        grid-template-columns: 1fr;
+    }
+
     .modalFooter {
         padding: 1.25rem 1.5rem 1.5rem;
         flex-direction: column;
@@ -1000,5 +1171,18 @@
 
     .statusBadge {
       flex-basis: 100%; 
+    }
+
+    .recurrencePanel {
+        padding: 1rem;
+    }
+
+    .weekDays {
+        gap: 0.3rem;
+    }
+
+    .weekDays button {
+        min-width: 32px;
+        min-height: 34px;
     }
 }
