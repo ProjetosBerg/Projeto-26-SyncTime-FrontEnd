@@ -140,7 +140,8 @@ const CreateModalNote = ({
       recurrenceFrequency: 'weekly',
       recurrenceInterval: 1,
       recurrenceEndDate: getDefaultRecurrenceEndDate(dateOfNote),
-      recurrenceWeekDays: [getWeekDay(dateOfNote)]
+      recurrenceWeekDays: [getWeekDay(dateOfNote)],
+      reminderMinutesBefore: null
     }
   });
 
@@ -255,7 +256,8 @@ const CreateModalNote = ({
         recurrenceFrequency: 'weekly',
         recurrenceInterval: 1,
         recurrenceEndDate: getDefaultRecurrenceEndDate(dateOfNote),
-        recurrenceWeekDays: [getWeekDay(dateOfNote)]
+        recurrenceWeekDays: [getWeekDay(dateOfNote)],
+        reminderMinutesBefore: noteToEdit.reminderMinutesBefore ?? null
       });
     } else {
       reset({
@@ -275,7 +277,8 @@ const CreateModalNote = ({
         recurrenceFrequency: 'weekly',
         recurrenceInterval: 1,
         recurrenceEndDate: getDefaultRecurrenceEndDate(dateOfNote),
-        recurrenceWeekDays: [getWeekDay(dateOfNote)]
+        recurrenceWeekDays: [getWeekDay(dateOfNote)],
+        reminderMinutesBefore: null
       });
       setComments([]);
       setNewComment('');
@@ -388,6 +391,10 @@ const CreateModalNote = ({
         routine_id: data.routine_id,
         userId: data.userId,
         dateOfNote: dateOfNote,
+        reminderMinutesBefore: data.reminderMinutesBefore,
+        ...(data.reminderMinutesBefore != null && {
+          timezoneOffset: new Date().getTimezoneOffset()
+        }),
         ...(recurrence && { recurrence })
       };
 
@@ -807,6 +814,47 @@ const CreateModalNote = ({
                         />
                       </div>
                     </div>
+                  </div>
+                  <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+                    <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="reminderMinutesBefore">
+                      Lembrete
+                    </label>
+                    <Controller
+                      name="reminderMinutesBefore"
+                      control={control}
+                      render={({ field }) => (
+                        <select
+                          id="reminderMinutesBefore"
+                          value={field.value ?? ''}
+                          onChange={(event) =>
+                            field.onChange(
+                              event.target.value === ''
+                                ? null
+                                : Number(event.target.value)
+                            )
+                          }
+                          className={`${styles.formSelect} ${styles[theme]} ${errors.reminderMinutesBefore ? styles.error : ''}`}
+                          style={{ '--focus-color': emphasisColor || '#667eea' }}
+                        >
+                          <option value="">Sem lembrete</option>
+                          <option value="0">No horário da atividade</option>
+                          <option value="5">5 minutos antes</option>
+                          <option value="10">10 minutos antes</option>
+                          <option value="15">15 minutos antes</option>
+                          <option value="30">30 minutos antes</option>
+                          <option value="60">1 hora antes</option>
+                          <option value="1440">1 dia antes</option>
+                        </select>
+                      )}
+                    />
+                    <ErrorMessage
+                      errors={errors}
+                      name="reminderMinutesBefore"
+                      render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                    />
+                    <small className={styles.fieldHint}>
+                      O aviso aparecerá na central de notificações. Em atividades recorrentes, cada ocorrência terá seu próprio lembrete.
+                    </small>
                   </div>
                 </div>
               </div>

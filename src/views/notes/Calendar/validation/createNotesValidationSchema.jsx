@@ -62,6 +62,15 @@ export const createNotesValidationSchema = yup.object().shape({
     .uuid("ID da rotina deve ser um UUID válido"),
   userId: yup.string().required("ID do Usuário é obrigatório"),
   dateOfNote: yup.string().nullable(),
+  reminderMinutesBefore: yup
+    .number()
+    .transform((value, originalValue) =>
+      originalValue === '' || originalValue == null ? null : value
+    )
+    .integer('A antecedência do lembrete deve ser um número inteiro')
+    .min(0, 'A antecedência do lembrete não pode ser negativa')
+    .max(10080, 'O lembrete deve ter no máximo sete dias de antecedência')
+    .nullable(),
   hasRecurrence: yup.boolean().default(false),
   recurrenceFrequency: yup.string().test(
     'recurrence-frequency',

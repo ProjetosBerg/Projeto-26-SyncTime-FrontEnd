@@ -97,7 +97,8 @@ const NotificationsDropdown = ({ onClose }) => {
       'Criação': styles.actionCriacao,
       'Atualização': styles.actionAtualizacao,
       'Exclusão': styles.actionExclusao,
-      'Exportação': styles.actionExportacao
+      'Exportação': styles.actionExportacao,
+      'Lembrete': styles.actionLembrete
     };
     return colors[action] || styles.actionDefault;
   };
@@ -225,7 +226,7 @@ const NotificationsDropdown = ({ onClose }) => {
 
       const routineData = routineResponse.data.data;
       console.log('routineData', routineData);
-      const routineDate = routineData.created_at.split('T')[0];
+      const routineDate = (noteData.dateOfNote || routineData.created_at).split('T')[0];
       console.log('routineDate', routineDate);
 
       const queryParams = new URLSearchParams({

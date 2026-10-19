@@ -630,6 +630,11 @@
   color: #3730a3;
 }
 
+.actionLembrete {
+  background-color: #ffedd5;
+  color: #c2410c;
+}
+
 .actionDefault {
   transition: all 0.3s ease;
 }
