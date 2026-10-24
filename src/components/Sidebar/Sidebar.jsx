@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   FaHome,
   FaCalendarDay,
+  FaBullseye,
   FaChartBar,
   FaFileAlt,
   FaStickyNote,
@@ -234,6 +235,13 @@ function Sidebar({ onToggle }) {
               <Link to="/meu-dia" className={`${styles.menuItem} ${isActive('/meu-dia')}`} onClick={closeMobileMenu}>
                 <FaCalendarDay className={styles.icon} />
                 {showExpanded && <span>Meu Dia</span>}
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/metas" className={`${styles.menuItem} ${isActive('/metas')}`} onClick={closeMobileMenu}>
+                <FaBullseye className={styles.icon} />
+                {showExpanded && <span>Metas</span>}
               </Link>
             </li>
 

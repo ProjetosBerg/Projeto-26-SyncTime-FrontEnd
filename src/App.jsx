@@ -37,6 +37,7 @@ import TransactionForm from './views/report/Sections/Category/Transaction/Form/T
 import Calendar from './views/notes/Calendar/Calendar';
 import DashboardCategoryManager from './views/dashboard/category/dashoardCategoryManager';
 import MyDay from './views/myDay/MyDay';
+import Goals from './views/goals/Goals';
 
 const APP_NAME = 'SyncTime';
 
@@ -47,6 +48,7 @@ const pageTitles = [
   { path: '/esqueceu-senha', exact: true, title: 'Recuperar senha' },
   { path: '/inicio', exact: true, title: 'Inicio' },
   { path: '/meu-dia', exact: true, title: 'Meu Dia' },
+  { path: '/metas', exact: true, title: 'Metas' },
   { path: '/dashboard/categoria', exact: true, title: 'Dashboard' },
   { path: '/anotacoes', exact: true, title: 'Anotacoes' },
   { path: '/configuracoes', exact: true, title: 'Configuracoes' },
@@ -260,6 +262,10 @@ function App() {
 
                 <ProtectedRoute exact path="/meu-dia">
                   <MyDay />
+                </ProtectedRoute>
+
+                <ProtectedRoute exact path="/metas">
+                  <Goals />
                 </ProtectedRoute>
 
                 {/* Rotas Configuração do sistema */}
