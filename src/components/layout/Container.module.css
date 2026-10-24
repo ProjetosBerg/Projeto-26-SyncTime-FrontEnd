@@ -1,5 +1,6 @@
 .container {
   width: 100%;
+  flex: 1 0 auto;
   min-height: calc(100vh - 140px);
   padding: 1em 1.5em 3em;
   transition: background-color 0.3s ease, color 0.3s ease;

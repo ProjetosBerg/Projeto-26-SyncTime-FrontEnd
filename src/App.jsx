@@ -210,6 +210,8 @@ function Layout({ children }) {
         style={{
           marginLeft: getMarginLeft(),
           minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
           transition: 'margin-left 0.3s ease, width 0.3s ease',
           width: getWidth()
         }}
@@ -217,6 +219,9 @@ function Layout({ children }) {
         {showSidebar && <Header />}
         <main
           style={{
+            display: 'flex',
+            flex: '1 0 auto',
+            flexDirection: 'column',
             padding: showSidebar ? '0' : '0',
             paddingTop: sidebarState.isMobile && showSidebar ? '70px' : '0'
           }}
