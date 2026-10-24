@@ -16,6 +16,20 @@ const dateValue = (days = 0) => {
 };
 const emptyForm = () => ({ title: '', description: '', targetCount: 10, startDate: dateValue(), endDate: dateValue(30) });
 const labels = { active: 'Em andamento', completed: 'Concluída', expired: 'Encerrada' };
+const formatDate = (value) => {
+  if (!value) return 'Data não informada';
+  const parsed = new Date(value);
+  const dateOnly = typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)
+    ? value.slice(0, 10)
+    : Number.isNaN(parsed.getTime())
+      ? ''
+      : parsed.toISOString().slice(0, 10);
+  if (!dateOnly) return 'Data inválida';
+  const date = new Date(`${dateOnly}T12:00:00`);
+  return Number.isNaN(date.getTime())
+    ? 'Data inválida'
+    : date.toLocaleDateString('pt-BR');
+};
 
 const Goals = () => {
   const { theme } = useTheme();
@@ -71,7 +85,7 @@ const Goals = () => {
         {goal.description && <p className={styles.description}>{goal.description}</p>}
         <div className={styles.numbers}><strong>{goal.progress} de {goal.targetCount}</strong><span>{goal.percentage}%</span></div>
         <div className={styles.track}><div style={{ width: `${goal.percentage}%`, backgroundColor: goal.status === 'completed' ? '#10b981' : emphasisColor }} /></div>
-        <footer><span>{new Date(`${goal.startDate}T12:00:00`).toLocaleDateString('pt-BR')} — {new Date(`${goal.endDate}T12:00:00`).toLocaleDateString('pt-BR')}</span>{goal.status === 'completed' && <CheckCircle2 size={19} />}</footer>
+        <footer><span>{formatDate(goal.startDate)} — {formatDate(goal.endDate)}</span>{goal.status === 'completed' && <CheckCircle2 size={19} />}</footer>
       </article>)}</section>}
     {showForm && <div className={styles.overlay} onMouseDown={(e) => e.target === e.currentTarget && setShowForm(false)}><form className={`${styles.modal} ${styles[theme]}`} onSubmit={submit}>
       <header><h2>{editingId ? 'Editar meta' : 'Nova meta'}</h2><button type="button" onClick={() => setShowForm(false)}><X /></button></header>

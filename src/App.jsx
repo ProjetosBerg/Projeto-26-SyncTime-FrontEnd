@@ -151,6 +151,7 @@ function Layout({ children }) {
   const protectedPages = [
     '/inicio',
     '/meu-dia',
+    '/metas',
     '/dashboard',
     '/relatorios',
     '/anotacoes',
