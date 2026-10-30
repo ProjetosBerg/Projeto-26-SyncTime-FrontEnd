@@ -7,7 +7,7 @@
 }
 
 .backButton {
- background-color: white;
+  background-color: white;
   border: none;
   padding: 10px 24px;
   border-radius: 4px;
@@ -47,4 +47,35 @@
 
 .createButton:active {
   transform: translateY(0);
+}
+
+@media (max-width: 600px) {
+  .actionBar {
+    gap: 10px;
+    padding: 12px 0;
+  }
+
+  .backButton,
+  .createButton {
+    min-height: 42px;
+    margin-top: 0;
+    padding: 9px 14px;
+    border-radius: 9px;
+  }
+
+  .createButton {
+    flex: 1;
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 360px) {
+  .backButton {
+    padding-inline: 12px;
+  }
+
+  .createButton {
+    padding-inline: 10px;
+    font-size: 12px;
+  }
 }

@@ -405,3 +405,33 @@ input:checked + .slider:before {
   width: 20px;
   height: 20px;
 }
+
+@media (max-width: 768px) {
+  .container {
+    min-height: auto;
+    padding: 12px 0;
+  }
+
+  .emptyState {
+    min-height: 360px;
+    padding: 32px 18px;
+  }
+
+  .emptyStateIcon {
+    width: 84px;
+    height: 84px;
+    margin-bottom: 18px;
+  }
+
+  .emptyStateIcon svg {
+    width: 42px;
+    height: 42px;
+  }
+
+  .emptyStateButton {
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+    padding: 12px 16px;
+  }
+}

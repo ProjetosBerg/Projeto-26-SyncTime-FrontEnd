@@ -79,3 +79,29 @@
 .container::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+@media (max-width: 520px) {
+  .container {
+    max-height: 70dvh;
+    padding-inline: 2px;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .section {
+    margin-bottom: 18px;
+  }
+
+  .sectionTitle {
+    font-size: 15px;
+  }
+
+  .list {
+    margin-left: 16px;
+  }
+
+  .consentBox {
+    margin-top: 22px;
+    padding: 12px;
+  }
+}

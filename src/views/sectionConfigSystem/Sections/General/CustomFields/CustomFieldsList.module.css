@@ -134,3 +134,25 @@ input:checked + .slider:before {
 .deleteButton:hover {
   background-color: #dc2626;
 }
+
+@media (max-width: 768px) {
+  .container {
+    min-height: auto;
+    padding: 12px 0;
+  }
+
+  .nameCell {
+    gap: 8px;
+  }
+
+  .actionsCell {
+    gap: 6px;
+  }
+
+  .editButton,
+  .deleteButton {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 7px;
+  }
+}

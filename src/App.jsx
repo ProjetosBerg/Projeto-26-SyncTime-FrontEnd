@@ -257,7 +257,10 @@ function Layout({ children }) {
           display: 'flex',
           flexDirection: 'column',
           transition: 'margin-left 0.3s ease, width 0.3s ease',
-          width: getWidth()
+          width: getWidth(),
+          minWidth: 0,
+          maxWidth: '100%',
+          overflowX: 'clip'
         }}
       >
         {showSidebar && <Header />}
@@ -266,8 +269,9 @@ function Layout({ children }) {
             display: 'flex',
             flex: '1 0 auto',
             flexDirection: 'column',
-            padding: showSidebar ? '0' : '0',
-            paddingTop: sidebarState.isMobile && showSidebar ? '70px' : '0'
+            minWidth: 0,
+            width: '100%',
+            overflowX: 'clip'
           }}
         >
           {showSidebar ? <Container>{children}</Container> : children}

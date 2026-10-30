@@ -259,3 +259,72 @@
 .profileContainer:hover .avatar {
   transform: scale(1.05);
 }
+
+.defaultAvatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 9999px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.profileContainer:hover .defaultAvatar {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.userIcon {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    min-height: 64px;
+    padding: 0.5rem 0.75rem 0.5rem 4.25rem;
+  }
+
+  .actions {
+    gap: 0.25rem;
+  }
+
+  .streakContainer,
+  .streakButton {
+    padding-inline: 0.25rem;
+  }
+
+  .streakButton {
+    gap: 0.35rem;
+  }
+
+  .streakNumber {
+    font-size: 1rem;
+  }
+
+  .avatar,
+  .defaultAvatar {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .container {
+    padding-left: 3.75rem;
+    padding-right: 0.5rem;
+  }
+
+  .actions {
+    gap: 0;
+  }
+
+  .notificationButton {
+    padding: 0.5rem;
+  }
+}

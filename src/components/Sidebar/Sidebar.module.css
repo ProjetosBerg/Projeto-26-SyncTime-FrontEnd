@@ -473,7 +473,7 @@
 
 /* Mobile */
 .mobileToggle {
-  position: absolute;
+  position: fixed;
   top: 10px;
   left: 16px;
   background-color: transparent;
@@ -484,6 +484,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  z-index: 1002;
 }
 .mobileToggle:hover {
   background-color: #334155;
@@ -556,7 +557,7 @@
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
-    width: 280px;
+    width: min(280px, 86vw);
   }
   
   .sidebar.mobileOpen {
@@ -564,7 +565,7 @@
   }
   
   .sidebar.minimized {
-    width: 280px;
+    width: min(280px, 86vw);
   }
   
   .toggleButton {

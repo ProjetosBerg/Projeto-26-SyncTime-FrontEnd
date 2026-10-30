@@ -351,6 +351,22 @@ input:checked + .slider:before {
   font-size: 14px;
 }
 
+@media (max-width: 768px) {
+  .container {
+    min-height: auto;
+    padding: 12px 0;
+  }
+
+  .emptyState {
+    padding: 32px 18px;
+  }
+
+  .emptyStateButton {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
 @media (max-width: 480px) {
   .container {
     padding: 12px;

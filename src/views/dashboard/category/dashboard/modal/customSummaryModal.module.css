@@ -306,3 +306,40 @@
     transform: scale(1);
   }
 }
+
+@media (max-width: 520px) {
+  .modalOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modalContent {
+    max-width: none;
+    max-height: 92dvh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .modalHeader,
+  .fieldsList,
+  .modalFooter {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .modalFooter {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .buttonsContainer {
+    width: 100%;
+  }
+
+  .cancelButton,
+  .submitButton {
+    flex: 1;
+    min-height: 42px;
+  }
+}

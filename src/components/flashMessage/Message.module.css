@@ -42,3 +42,25 @@
   background-color: #3b82f6;
   color: white;
 }
+
+@media (max-width: 520px) {
+  .message {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+    padding: 13px 16px;
+    text-align: center;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateY(-120%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
