@@ -82,7 +82,7 @@ export default function useAuth() {
       setAuthenticated(true);
       setLoading(false);
       return true;
-    } catch (error) {
+    } catch {
       if (!handlingUnauthorized.current) {
         handlingUnauthorized.current = true;
         clearLocalSession(true);

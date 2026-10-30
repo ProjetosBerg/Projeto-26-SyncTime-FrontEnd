@@ -26,7 +26,7 @@ const RecordTypeForm = () => {
   const { id } = useParams();
   const history = useHistory();
   const { theme } = useTheme();
-  const { primaryButtonColor, secondaryButtonColor } = useButtonColors(); 
+  const { primaryButtonColor, secondaryButtonColor } = useButtonColors();
   const { setFlashMessage } = useFlashMessage();
 
   const [loading, setLoading] = useState(false);
@@ -106,7 +106,7 @@ const RecordTypeForm = () => {
   };
 
   const IconValueContainer = (props) => {
-    const { children, getValue } = props;
+    const { getValue } = props;
     const value = getValue();
     const selectedIcon = value[0];
 

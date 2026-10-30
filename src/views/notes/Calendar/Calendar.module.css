@@ -26,8 +26,64 @@
   background: rgba(15, 23, 42, 0.98);
 }
 
+.calendarFeedback {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  color: #64748b;
+  background: rgba(148, 163, 184, 0.08);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.calendarFeedback > svg {
+  width: 19px;
+  flex: 0 0 auto;
+}
+
+.calendarFeedbackError {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.09);
+}
+
+.calendarFeedback button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 10px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.75);
+  font: inherit;
+  cursor: pointer;
+}
+
+.calendarFeedback button svg {
+  width: 16px;
+}
+
+.feedbackSpinner {
+  animation: feedbackSpin 0.8s linear infinite;
+}
+
+@keyframes feedbackSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .header {
-  background: linear-gradient(135deg, var(--emphasis-color, #667eea) 0%, var(--emphasis-gradient-end, #764ba2) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--emphasis-color, #667eea) 0%,
+    var(--emphasis-gradient-end, #764ba2) 100%
+  );
   padding: 32px;
   color: white;
 }
@@ -154,7 +210,11 @@
 
 .monthSelected,
 .yearSelected {
-  background: linear-gradient(135deg, var(--emphasis-color, #667eea) 0%, var(--emphasis-gradient-end, #764ba2) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--emphasis-color, #667eea) 0%,
+    var(--emphasis-gradient-end, #764ba2) 100%
+  );
   color: white !important;
 }
 
@@ -302,14 +362,22 @@
 }
 
 .dayCellToday {
-  background: linear-gradient(135deg, var(--emphasis-color, #667eea) 0%, var(--emphasis-gradient-end, #764ba2) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--emphasis-color, #667eea) 0%,
+    var(--emphasis-gradient-end, #764ba2) 100%
+  );
   color: white;
   font-weight: 700;
   border-color: var(--emphasis-color, #667eea);
 }
 
 .dayCellToday:hover {
-  background: linear-gradient(135deg, var(--emphasis-color, #667eea) 0%, var(--emphasis-gradient-end, #764ba2) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--emphasis-color, #667eea) 0%,
+    var(--emphasis-gradient-end, #764ba2) 100%
+  );
   transform: scale(1.05);
 }
 
@@ -384,7 +452,7 @@
   line-height: 1.3;
   overflow: hidden;
   margin-top: auto;
-  min-height: 40px; 
+  min-height: 40px;
 }
 
 .notePreviewItem {
@@ -508,7 +576,7 @@
   border: 2px solid rgb(236, 17, 17);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   z-index: 2;
-  display: none; 
+  display: none;
 }
 
 .notesIndicator.light {
@@ -668,6 +736,16 @@
 
   .calendarWrapper {
     border-radius: 16px;
+  }
+
+  .calendarFeedback {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .calendarFeedback > svg {
+    align-self: center;
   }
 
   .header {

@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  LoaderCircle,
+  RefreshCw
+} from 'lucide-react';
 import styles from './Calendar.module.css';
 import NoteList from './List/NoteList';
 import { useTheme } from './../../../hooks/useTheme';
@@ -21,9 +27,7 @@ const getDateKey = (value) => {
   }
 
   const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? null
-    : date.toISOString().split('T')[0];
+  return Number.isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
 };
 
 const Calendar = () => {
@@ -36,6 +40,8 @@ const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedRoutine, setSelectedRoutine] = useState(null);
   const [notes, setNotes] = useState({});
+  const [loadingRoutines, setLoadingRoutines] = useState(true);
+  const [routinesError, setRoutinesError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showNoteList, setShowNoteList] = useState(false);
   const [showCreateNoteModal, setShowCreateNoteModal] = useState(false);
@@ -46,9 +52,9 @@ const Calendar = () => {
   const [selectedPeriods, setSelectedPeriods] = useState([]);
   const [holidays, setHolidays] = useState({});
   const [openNoteListFromNotification, setOpenNoteListFromNotification] =
-    useState(false); 
-  const [targetRoutineId, setTargetRoutineId] = useState(null); 
-  const [targetNoteId, setTargetNoteId] = useState(null); 
+    useState(false);
+  const [targetRoutineId, setTargetRoutineId] = useState(null);
+  const [targetNoteId, setTargetNoteId] = useState(null);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const monthPickerRef = useRef(null);
   const [showYearPicker, setShowYearPicker] = useState(false);
@@ -224,6 +230,9 @@ const Calendar = () => {
 
   const loadRoutines = useCallback(async () => {
     try {
+      setLoadingRoutines(true);
+      setRoutinesError('');
+      setNotes({});
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
       const response = await ServiceRoutines.getByAllRoutines(year, month);
@@ -236,19 +245,16 @@ const Calendar = () => {
             routine.type === 'periodo'
               ? routine.period
               : routine.type === 'resumo'
-              ? 'Resumo do Dia'
-              : routine.type;
-          const notesByDate = (routine.notes || []).reduce(
-            (dates, note) => {
-              const noteDate = getDateKey(note.dateOfNote) || routineDate;
-              if (!noteDate) return dates;
+                ? 'Resumo do Dia'
+                : routine.type;
+          const notesByDate = (routine.notes || []).reduce((dates, note) => {
+            const noteDate = getDateKey(note.dateOfNote) || routineDate;
+            if (!noteDate) return dates;
 
-              if (!dates[noteDate]) dates[noteDate] = [];
-              dates[noteDate].push(note);
-              return dates;
-            },
-            {}
-          );
+            if (!dates[noteDate]) dates[noteDate] = [];
+            dates[noteDate].push(note);
+            return dates;
+          }, {});
           const routineDates = Object.keys(notesByDate);
 
           if (routineDates.length === 0 && routineDate) {
@@ -276,12 +282,21 @@ const Calendar = () => {
           grouped[dateKey] = sortNotes(grouped[dateKey]);
         });
         setNotes(grouped);
+      } else {
+        throw new Error('Resposta inválida ao carregar rotinas');
       }
     } catch (error) {
       console.error('Erro ao buscar rotinas:', error);
-      setFlashMessage('Erro ao carregar rotinas', 'error');
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        'Erro ao carregar rotinas';
+      setRoutinesError(message);
+      setFlashMessage(message, 'error');
+    } finally {
+      setLoadingRoutines(false);
     }
-  }, [currentDate]);
+  }, [currentDate, setFlashMessage]);
 
   useEffect(() => {
     loadRoutines();
@@ -289,10 +304,16 @@ const Calendar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (monthPickerRef.current && !monthPickerRef.current.contains(event.target)) {
+      if (
+        monthPickerRef.current &&
+        !monthPickerRef.current.contains(event.target)
+      ) {
         setShowMonthPicker(false);
       }
-      if (yearPickerRef.current && !yearPickerRef.current.contains(event.target)) {
+      if (
+        yearPickerRef.current &&
+        !yearPickerRef.current.contains(event.target)
+      ) {
         setShowYearPicker(false);
       }
     };
@@ -596,13 +617,18 @@ const Calendar = () => {
                   </span>
                 </h1>
                 {showMonthPicker && (
-                  <div ref={monthPickerRef} className={`${styles.monthPicker} ${styles[theme]}`}>
+                  <div
+                    ref={monthPickerRef}
+                    className={`${styles.monthPicker} ${styles[theme]}`}
+                  >
                     {months.map((month, index) => (
                       <div
                         key={month}
                         className={`${styles.monthOption} ${index === currentDate.getMonth() ? styles.monthSelected : ''}`}
                         onClick={() => {
-                          setCurrentDate(new Date(currentDate.getFullYear(), index, 1));
+                          setCurrentDate(
+                            new Date(currentDate.getFullYear(), index, 1)
+                          );
                           setShowMonthPicker(false);
                         }}
                       >
@@ -612,13 +638,18 @@ const Calendar = () => {
                   </div>
                 )}
                 {showYearPicker && (
-                  <div ref={yearPickerRef} className={`${styles.yearPicker} ${styles[theme]}`}>
+                  <div
+                    ref={yearPickerRef}
+                    className={`${styles.yearPicker} ${styles[theme]}`}
+                  >
                     {years.map((year) => (
                       <div
                         key={year}
                         className={`${styles.yearOption} ${year === currentDate.getFullYear() ? styles.yearSelected : ''}`}
                         onClick={() => {
-                          setCurrentDate(new Date(year, currentDate.getMonth(), 1));
+                          setCurrentDate(
+                            new Date(year, currentDate.getMonth(), 1)
+                          );
                           setShowYearPicker(false);
                         }}
                       >
@@ -670,6 +701,35 @@ const Calendar = () => {
             </button>
           </div>
         </div>
+
+        {(loadingRoutines || routinesError) && (
+          <div
+            className={`${styles.calendarFeedback} ${
+              routinesError ? styles.calendarFeedbackError : ''
+            }`}
+            role={routinesError ? 'alert' : 'status'}
+            aria-live="polite"
+          >
+            {routinesError ? (
+              <AlertCircle aria-hidden="true" />
+            ) : (
+              <LoaderCircle
+                className={styles.feedbackSpinner}
+                aria-hidden="true"
+              />
+            )}
+            <span>
+              {routinesError
+                ? `Não foi possível carregar o calendário: ${routinesError}`
+                : 'Carregando atividades do mês...'}
+            </span>
+            {routinesError && (
+              <button type="button" onClick={loadRoutines}>
+                <RefreshCw aria-hidden="true" /> Tentar novamente
+              </button>
+            )}
+          </div>
+        )}
 
         <div className={`${styles.weekDays} ${styles[theme]}`}>
           {weekDays.map((day) => (

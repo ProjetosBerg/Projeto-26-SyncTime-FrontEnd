@@ -19,7 +19,6 @@ import { Context } from '../../context/UserContext';
 // 🧰 Utilitários
 import errorFormMessage from '../../utils/errorFormMessage';
 
-
 const Login = () => {
   const { login } = useContext(Context);
   const [showPassword, setShowPassword] = useState(false);
@@ -28,22 +27,26 @@ const Login = () => {
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors }
   } = useForm({
     defaultValues: {
       login: '',
-      password: '',
-    },
+      password: ''
+    }
   });
 
   const onSubmit = async (data) => {
-   const formatData = {
-    login: data.login,
-    password: data.password
-   }
+    const formatData = {
+      login: data.login,
+      password: data.password
+    };
 
-
-   login(formatData)
+    try {
+      setLoading(true);
+      await login(formatData);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,7 +63,8 @@ const Login = () => {
           </div>
 
           <p className={styles.description}>
-            Acesse sua conta e continue organizando seu tempo de forma eficiente.
+            Acesse sua conta e continue organizando seu tempo de forma
+            eficiente.
           </p>
         </div>
 
@@ -79,7 +83,7 @@ const Login = () => {
                 name="login"
                 control={control}
                 rules={{
-                  required: 'Nome de usuário é obrigatório',
+                  required: 'Nome de usuário é obrigatório'
                 }}
                 render={({ field }) => (
                   <input
@@ -111,8 +115,8 @@ const Login = () => {
                     required: 'Senha é obrigatória',
                     minLength: {
                       value: 6,
-                      message: 'A senha deve ter no mínimo 6 caracteres',
-                    },
+                      message: 'A senha deve ter no mínimo 6 caracteres'
+                    }
                   }}
                   render={({ field }) => (
                     <input
@@ -128,8 +132,7 @@ const Login = () => {
                 <span
                   className={styles.eyeIcon}
                   onClick={() => setShowPassword(!showPassword)}
-                >
-                </span>
+                ></span>
               </div>
               <ErrorMessage
                 errors={errors}

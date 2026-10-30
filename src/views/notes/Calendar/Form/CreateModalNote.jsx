@@ -6,7 +6,7 @@ import CreatableSelect from 'react-select/creatable';
 import styles from './CreateModalNote.module.css';
 import { useTheme } from './../../../../hooks/useTheme';
 import { useEmphasisColor } from './../../../../hooks/useEmphasisColor';
-import { useButtonColors } from './../../../../hooks/useButtonColors'; 
+import { useButtonColors } from './../../../../hooks/useButtonColors';
 import useFlashMessage from '../../../../hooks/userFlashMessage';
 import ServiceCategory from '../../../sectionConfigSystem/Sections/Report/Category/services/ServiceCategory';
 import ServiceNotes from '../services/ServiceNotes';
@@ -14,26 +14,26 @@ import { createNotesValidationSchema } from '../validation/createNotesValidation
 import StatusBadge from '../../../../components/statusBadge/StatusBadge';
 
 const STATUS_CONFIG = {
-  'Não Realizado': { 
-    label: 'Não Realizado', 
-    color: '#ef4444', 
-    bgColor: '#fef2f2', 
+  'Não Realizado': {
+    label: 'Não Realizado',
+    color: '#ef4444',
+    bgColor: '#fef2f2',
     shadowColor: 'rgba(239, 68, 68, 0.25)',
-    icon: '✕' 
+    icon: '✕'
   },
-  'Em Andamento': { 
-    label: 'Andamento', 
-    color: '#3b82f6', 
-    bgColor: '#eff6ff', 
+  'Em Andamento': {
+    label: 'Andamento',
+    color: '#3b82f6',
+    bgColor: '#eff6ff',
     shadowColor: 'rgba(59, 130, 246, 0.25)',
-    icon: '▶' 
+    icon: '▶'
   },
-  'Concluído': { 
-    label: 'Concluído', 
-    color: '#10b981', 
-    bgColor: '#ecfdf5', 
+  Concluído: {
+    label: 'Concluído',
+    color: '#10b981',
+    bgColor: '#ecfdf5',
     shadowColor: 'rgba(16, 185, 129, 0.25)',
-    icon: '✓' 
+    icon: '✓'
   }
 };
 
@@ -87,7 +87,6 @@ const getDefaultRecurrenceEndDate = (date) => {
   return formatDateForInput(endDate);
 };
 
-
 const CreateModalNote = ({
   isOpen,
   onClose,
@@ -98,7 +97,7 @@ const CreateModalNote = ({
 }) => {
   const { theme } = useTheme();
   const { emphasisColor } = useEmphasisColor();
-  const { primaryButtonColor, secondaryButtonColor } = useButtonColors(); 
+  const { primaryButtonColor, secondaryButtonColor } = useButtonColors();
   const { setFlashMessage } = useFlashMessage();
   const [loading, setLoading] = useState(false);
   const [comments, setComments] = useState([]);
@@ -149,7 +148,7 @@ const CreateModalNote = ({
   const recurrenceFrequency = watch('recurrenceFrequency');
 
   const fetchCategories = async () => {
-    if (categories.length > 0) return; 
+    if (categories.length > 0) return;
     try {
       setLoadingCategories(true);
       const response = await ServiceCategory.getByAllSideBarCategory(true);
@@ -172,8 +171,8 @@ const CreateModalNote = ({
       const response = await ServiceCategory.getByIdCategory(categoryId);
       if (response.data.status === 'OK') {
         const categoryData = response.data.data;
-        if (!categories.find(cat => cat.id === categoryData.id)) {
-          setCategories(prev => [...prev, categoryData]);
+        if (!categories.find((cat) => cat.id === categoryData.id)) {
+          setCategories((prev) => [...prev, categoryData]);
         }
         return true;
       } else {
@@ -194,7 +193,6 @@ const CreateModalNote = ({
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
       setShowComments(!mobile);
-      
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -202,17 +200,14 @@ const CreateModalNote = ({
   }, []);
 
   useEffect(() => {
-     fetchCategories();
-  }, [isOpen]);
-
-  useEffect(() => {
     if (!isOpen) {
       document.body.style.overflow = 'auto';
       setFormInitialized(false);
-      return;
+      return undefined;
     }
 
     document.body.style.overflow = 'hidden';
+    let isActive = true;
 
     const loadCategories = async () => {
       const categoryId = noteToEdit?.category_id;
@@ -226,16 +221,20 @@ const CreateModalNote = ({
       } else {
         await fetchCategories();
       }
+
+      if (isActive) setFormInitialized(true);
     };
 
     loadCategories();
 
+    return () => {
+      isActive = false;
+      document.body.style.overflow = 'auto';
+    };
   }, [isOpen, noteToEdit?.category_id]);
 
-
-
   useEffect(() => {
-    if (!isOpen || !formInitialized) return;
+    if (!isOpen || !formInitialized) return undefined;
 
     if (noteToEdit) {
       setComments(noteToEdit.comments || []);
@@ -283,13 +282,26 @@ const CreateModalNote = ({
       setComments([]);
       setNewComment('');
     }
-  }, [isOpen, noteToEdit, selectedRoutine?.id, userId, reset, formInitialized, dateOfNote]);
+  }, [
+    isOpen,
+    noteToEdit,
+    selectedRoutine?.id,
+    userId,
+    reset,
+    formInitialized,
+    dateOfNote
+  ]);
 
   useEffect(() => {
-    if (isOpen && categories.length > 0 && !formInitialized) {
-      setFormInitialized(true);
-    }
-  }, [isOpen, categories.length, formInitialized]);
+    if (!isOpen) return undefined;
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape' && !loading && onClose) onClose();
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, loading, onClose]);
 
   const closeModal = () => {
     if (onClose) onClose();
@@ -299,7 +311,7 @@ const CreateModalNote = ({
   };
 
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && !loading) {
       closeModal();
     }
   };
@@ -309,14 +321,19 @@ const CreateModalNote = ({
 
     try {
       setUpdatingComment(true);
-      await ServiceNotes.editNotes(noteToEdit.id, { comments: updatedComments });
+      await ServiceNotes.editNotes(noteToEdit.id, {
+        comments: updatedComments
+      });
       setFlashMessage('Comentário adicionado com sucesso', 'success');
       if (onRefresh) {
         onRefresh();
       }
     } catch (error) {
       console.error('Erro ao atualizar comentários:', error);
-      const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.message || 'Erro ao adicionar comentário';
+      const errorMsg =
+        error.response?.data?.errors?.[0] ||
+        error.response?.data?.message ||
+        'Erro ao adicionar comentário';
       setFlashMessage(errorMsg, 'error');
       setComments(noteToEdit.comments || []);
     } finally {
@@ -348,7 +365,7 @@ const CreateModalNote = ({
   };
 
   const handleCommentKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { 
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       addComment();
     }
@@ -366,16 +383,17 @@ const CreateModalNote = ({
         throw new Error('ID da rotina é obrigatório');
       }
 
-      const recurrence = !noteToEdit && data.hasRecurrence
-        ? {
-            frequency: data.recurrenceFrequency,
-            interval: Number(data.recurrenceInterval),
-            endDate: data.recurrenceEndDate,
-            ...(data.recurrenceFrequency === 'weekly' && {
-              weekDays: [...data.recurrenceWeekDays].sort((a, b) => a - b)
-            })
-          }
-        : undefined;
+      const recurrence =
+        !noteToEdit && data.hasRecurrence
+          ? {
+              frequency: data.recurrenceFrequency,
+              interval: Number(data.recurrenceInterval),
+              endDate: data.recurrenceEndDate,
+              ...(data.recurrenceFrequency === 'weekly' && {
+                weekDays: [...data.recurrenceWeekDays].sort((a, b) => a - b)
+              })
+            }
+          : undefined;
 
       const payload = {
         status: data.status,
@@ -399,7 +417,7 @@ const CreateModalNote = ({
       };
 
       if (noteToEdit) {
-         await ServiceNotes.editNotes(noteToEdit.id, payload);
+        await ServiceNotes.editNotes(noteToEdit.id, payload);
         setFlashMessage('Anotação atualizada com sucesso', 'success');
       } else {
         const response = await ServiceNotes.createNotes(payload);
@@ -416,7 +434,11 @@ const CreateModalNote = ({
       closeModal();
     } catch (error) {
       console.error('Erro ao salvar anotação:', error);
-      const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.message || error.message || 'Erro ao salvar anotação';
+      const errorMsg =
+        error.response?.data?.errors?.[0] ||
+        error.response?.data?.message ||
+        error.message ||
+        'Erro ao salvar anotação';
       setFlashMessage(errorMsg, 'error');
     } finally {
       setLoading(false);
@@ -428,62 +450,64 @@ const CreateModalNote = ({
       ...provided,
       backgroundColor: theme === 'light' ? 'white' : '#334155',
       borderRadius: '12px',
-      borderColor: error 
-        ? '#ef4444' 
-        : state.isFocused 
-          ? emphasisColor 
-          : theme === 'light' 
-            ? '#e1e5e9' 
+      borderColor: error
+        ? '#ef4444'
+        : state.isFocused
+          ? emphasisColor
+          : theme === 'light'
+            ? '#e1e5e9'
             : '#475569',
-      boxShadow: state.isFocused 
-        ? `0 0 0 3px ${theme === 'light' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(102, 126, 234, 0.2)'}` 
-        : error 
-          ? '0 0 0 1px #ef4444' 
+      boxShadow: state.isFocused
+        ? `0 0 0 3px ${theme === 'light' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(102, 126, 234, 0.2)'}`
+        : error
+          ? '0 0 0 1px #ef4444'
           : 'none',
       minHeight: '50px',
       maxHeight: '80px',
       '&:hover': {
-        borderColor: error ? '#ef4444' : emphasisColor,
-      },
+        borderColor: error ? '#ef4444' : emphasisColor
+      }
     }),
     multiValue: (provided) => ({
       ...provided,
       backgroundColor: theme === 'light' ? '#e1e5e9' : '#475569',
-      borderRadius: '4px',
+      borderRadius: '4px'
     }),
     multiValueLabel: (provided) => ({
       ...provided,
-      color: theme === 'light' ? '#374151' : '#f1f5f9',
+      color: theme === 'light' ? '#374151' : '#f1f5f9'
     }),
     multiValueRemove: (provided) => ({
       ...provided,
       color: theme === 'light' ? '#6b7280' : '#94a3b8',
       '&:hover': {
         backgroundColor: theme === 'light' ? '#d1d5db' : '#475569',
-        color: theme === 'light' ? '#374151' : '#f1f5f9',
-      },
+        color: theme === 'light' ? '#374151' : '#f1f5f9'
+      }
     }),
     placeholder: (provided) => ({
       ...provided,
-      color: theme === 'light' ? '#6b7280' : '#94a3b8',
+      color: theme === 'light' ? '#6b7280' : '#94a3b8'
     }),
     input: (provided) => ({
       ...provided,
-      color: theme === 'light' ? '#374151' : '#f1f5f9',
+      color: theme === 'light' ? '#374151' : '#f1f5f9'
     }),
     option: (provided, state) => ({
       ...provided,
-      backgroundColor: state.isFocused 
-        ? theme === 'light' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(102, 126, 234, 0.2)' 
+      backgroundColor: state.isFocused
+        ? theme === 'light'
+          ? 'rgba(102, 126, 234, 0.1)'
+          : 'rgba(102, 126, 234, 0.2)'
         : 'transparent',
-      color: theme === 'light' ? '#374151' : '#f1f5f9',
+      color: theme === 'light' ? '#374151' : '#f1f5f9'
     }),
     menu: (provided) => ({
       ...provided,
       backgroundColor: theme === 'light' ? 'white' : '#1e293b',
       border: `1px solid ${theme === 'light' ? '#e1e5e9' : '#334155'}`,
-      borderRadius: '8px',
-    }),
+      borderRadius: '8px'
+    })
   });
 
   if (!isOpen) return null;
@@ -492,11 +516,12 @@ const CreateModalNote = ({
   const isEditMode = !!noteToEdit;
   const recurrenceStartDate = formatDateForInput(dateOfNote);
   const recurrenceMaxDate = getMaxRecurrenceDate(dateOfNote);
-  const recurrenceUnit = {
-    daily: 'dia(s)',
-    weekly: 'semana(s)',
-    monthly: 'mês(es)'
-  }[recurrenceFrequency] || 'período(s)';
+  const recurrenceUnit =
+    {
+      daily: 'dia(s)',
+      weekly: 'semana(s)',
+      monthly: 'mês(es)'
+    }[recurrenceFrequency] || 'período(s)';
   const modalTitle = isEditMode ? 'Editar Anotação' : 'Nova Anotação';
 
   const priorityOptions = [
@@ -506,7 +531,7 @@ const CreateModalNote = ({
     { value: 'Urgente', label: 'Urgente' }
   ];
 
-  const categoryOptions = categories.map(cat => ({
+  const categoryOptions = categories.map((cat) => ({
     value: cat.id,
     label: cat.name
   }));
@@ -531,13 +556,17 @@ const CreateModalNote = ({
             background: `linear-gradient(135deg, ${emphasisColor || '#667eea'} 0%, ${emphasisColor || '#764ba2'} 100%)`
           }}
         >
-          <h2 className={`${styles.modalTitle} ${styles[theme]}`}>{modalTitle}</h2>
+          <h2 className={`${styles.modalTitle} ${styles[theme]}`}>
+            {modalTitle}
+          </h2>
           {isMobile && (
             <button
               className={`${styles.toggleBtn} ${styles[theme]} ${showComments ? styles.active : ''}`}
               onClick={toggleComments}
               aria-expanded={showComments}
-              aria-label={showComments ? 'Voltar ao formulário' : 'Mostrar comentários'}
+              aria-label={
+                showComments ? 'Voltar ao formulário' : 'Mostrar comentários'
+              }
               style={{
                 borderColor: emphasisColor || '#667eea',
                 background: `rgba(${emphasisColor || '#667eea'}, 0.2)`
@@ -546,15 +575,23 @@ const CreateModalNote = ({
               {showComments ? '← Voltar ao Form' : '💬 Comentários'}
             </button>
           )}
-          <button className={`${styles.closeBtn} ${styles[theme]}`} onClick={closeModal}>
+          <button
+            className={`${styles.closeBtn} ${styles[theme]}`}
+            onClick={closeModal}
+          >
             &times;
           </button>
         </div>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={`${styles.modalBody} ${styles[theme]}`}>
-            <div className={`${styles.mainContent} ${styles[theme]} ${showComments && isMobile ? styles.hiddenOnMobile : ''}`}>
+            <div
+              className={`${styles.mainContent} ${styles[theme]} ${showComments && isMobile ? styles.hiddenOnMobile : ''}`}
+            >
               <div className={`${styles.formSection} ${styles[theme]}`}>
-                <h3 className={`${styles.sectionTitle} ${styles[theme]}`} style={{ '--section-bar-color': emphasisColor || '#667eea' }}>
+                <h3
+                  className={`${styles.sectionTitle} ${styles[theme]}`}
+                  style={{ '--section-bar-color': emphasisColor || '#667eea' }}
+                >
                   Informações Gerais
                 </h3>
                 <div className={styles.formGrid}>
@@ -582,14 +619,21 @@ const CreateModalNote = ({
                           <ErrorMessage
                             errors={errors}
                             name="status"
-                            render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                            render={({ message }) => (
+                              <div className={styles.errorMessage}>
+                                {message}
+                              </div>
+                            )}
                           />
                         </>
                       )}
                     />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="collaborators">
+                    <label
+                      className={`${styles.formLabel} ${styles[theme]}`}
+                      htmlFor="collaborators"
+                    >
                       Colaboradores Envolvidos
                     </label>
                     <Controller
@@ -597,23 +641,48 @@ const CreateModalNote = ({
                       control={control}
                       render={({ field, fieldState }) => {
                         const { error } = fieldState;
-                        const selectedValue = field.value ? field.value.map(val => ({ value: val, label: val })) : [];
+                        const selectedValue = field.value
+                          ? field.value.map((val) => ({
+                              value: val,
+                              label: val
+                            }))
+                          : [];
                         return (
-                          <div className={error ? `${styles.formGroup} ${styles.error}` : styles.formGroup}>
+                          <div
+                            className={
+                              error
+                                ? `${styles.formGroup} ${styles.error}`
+                                : styles.formGroup
+                            }
+                          >
                             <CreatableSelect
                               isMulti
                               options={[]}
                               value={selectedValue}
-                              onChange={(newValue) => field.onChange(newValue ? newValue.map(opt => opt.value) : [])}
+                              onChange={(newValue) =>
+                                field.onChange(
+                                  newValue
+                                    ? newValue.map((opt) => opt.value)
+                                    : []
+                                )
+                              }
                               placeholder="Digite colaboradores..."
-                              styles={getCustomStyles(error, theme, emphasisColor)}
+                              styles={getCustomStyles(
+                                error,
+                                theme,
+                                emphasisColor
+                              )}
                               isClearable
                               isSearchable
                             />
                             <ErrorMessage
                               errors={errors}
                               name="collaborators"
-                              render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                              render={({ message }) => (
+                                <div className={styles.errorMessage}>
+                                  {message}
+                                </div>
+                              )}
                             />
                           </div>
                         );
@@ -621,7 +690,10 @@ const CreateModalNote = ({
                     />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="priority">
+                    <label
+                      className={`${styles.formLabel} ${styles[theme]}`}
+                      htmlFor="priority"
+                    >
                       Prioridade *
                     </label>
                     <Controller
@@ -632,7 +704,9 @@ const CreateModalNote = ({
                           {...field}
                           id="priority"
                           className={`${styles.formSelect} ${styles[theme]} ${errors.priority ? styles.error : ''}`}
-                          style={{ '--focus-color': emphasisColor || '#667eea' }}
+                          style={{
+                            '--focus-color': emphasisColor || '#667eea'
+                          }}
                         >
                           <option value="">Selecione...</option>
                           {priorityOptions.map((opt) => (
@@ -646,11 +720,16 @@ const CreateModalNote = ({
                     <ErrorMessage
                       errors={errors}
                       name="priority"
-                      render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                      render={({ message }) => (
+                        <div className={styles.errorMessage}>{message}</div>
+                      )}
                     />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="category_id">
+                    <label
+                      className={`${styles.formLabel} ${styles[theme]}`}
+                      htmlFor="category_id"
+                    >
                       Categoria Relacionada
                     </label>
                     <Controller
@@ -661,7 +740,9 @@ const CreateModalNote = ({
                           {...field}
                           id="category_id"
                           className={`${styles.formSelect} ${styles[theme]} ${errors.category_id ? styles.error : ''}`}
-                          style={{ '--focus-color': emphasisColor || '#667eea' }}
+                          style={{
+                            '--focus-color': emphasisColor || '#667eea'
+                          }}
                           disabled={loadingCategories}
                         >
                           <option value="">Selecione...</option>
@@ -676,20 +757,32 @@ const CreateModalNote = ({
                     <ErrorMessage
                       errors={errors}
                       name="category_id"
-                      render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                      render={({ message }) => (
+                        <div className={styles.errorMessage}>{message}</div>
+                      )}
                     />
-                    {loadingCategories && <div className={styles.loadingText}>Carregando categorias...</div>}
+                    {loadingCategories && (
+                      <div className={styles.loadingText}>
+                        Carregando categorias...
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className={`${styles.formSection} ${styles[theme]}`}>
-                <h3 className={`${styles.sectionTitle} ${styles[theme]}`} style={{ '--section-bar-color': emphasisColor || '#667eea' }}>
+                <h3
+                  className={`${styles.sectionTitle} ${styles[theme]}`}
+                  style={{ '--section-bar-color': emphasisColor || '#667eea' }}
+                >
                   Detalhes da Atividade
                 </h3>
                 <div className={styles.formGrid}>
                   <div className={styles.formGroup}>
-                    <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="activity">
+                    <label
+                      className={`${styles.formLabel} ${styles[theme]}`}
+                      htmlFor="activity"
+                    >
                       Atividade *
                     </label>
                     <Controller
@@ -702,18 +795,25 @@ const CreateModalNote = ({
                           id="activity"
                           className={`${styles.formInput} ${styles[theme]} ${errors.activity ? styles.error : ''}`}
                           placeholder="Ex: Reunião de equipe"
-                          style={{ '--focus-color': emphasisColor || '#667eea' }}
+                          style={{
+                            '--focus-color': emphasisColor || '#667eea'
+                          }}
                         />
                       )}
                     />
                     <ErrorMessage
                       errors={errors}
                       name="activity"
-                      render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                      render={({ message }) => (
+                        <div className={styles.errorMessage}>{message}</div>
+                      )}
                     />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="activityType">
+                    <label
+                      className={`${styles.formLabel} ${styles[theme]}`}
+                      htmlFor="activityType"
+                    >
                       Tipo de Atividade *
                     </label>
                     <Controller
@@ -724,7 +824,9 @@ const CreateModalNote = ({
                           {...field}
                           id="activityType"
                           className={`${styles.formSelect} ${styles[theme]} ${errors.activityType ? styles.error : ''}`}
-                          style={{ '--focus-color': emphasisColor || '#667eea' }}
+                          style={{
+                            '--focus-color': emphasisColor || '#667eea'
+                          }}
                         >
                           <option value="">Selecione...</option>
                           {activityTypeOptions.map((opt) => (
@@ -738,11 +840,16 @@ const CreateModalNote = ({
                     <ErrorMessage
                       errors={errors}
                       name="activityType"
-                      render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                      render={({ message }) => (
+                        <div className={styles.errorMessage}>{message}</div>
+                      )}
                     />
                   </div>
                   <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-                    <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="description">
+                    <label
+                      className={`${styles.formLabel} ${styles[theme]}`}
+                      htmlFor="description"
+                    >
                       Descrição do que foi feito *
                     </label>
                     <Controller
@@ -754,21 +861,30 @@ const CreateModalNote = ({
                           id="description"
                           className={`${styles.formTextarea} ${styles[theme]} ${errors.description ? styles.error : ''}`}
                           placeholder="Descreva em detalhes o que foi realizado..."
-                          style={{ '--focus-color': emphasisColor || '#667eea' }}
+                          style={{
+                            '--focus-color': emphasisColor || '#667eea'
+                          }}
                         />
                       )}
                     />
                     <ErrorMessage
                       errors={errors}
                       name="description"
-                      render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                      render={({ message }) => (
+                        <div className={styles.errorMessage}>{message}</div>
+                      )}
                     />
                   </div>
                   <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-                    <label className={`${styles.formLabel} ${styles[theme]}`}>Período do Horário *</label>
+                    <label className={`${styles.formLabel} ${styles[theme]}`}>
+                      Período do Horário *
+                    </label>
                     <div className={styles.timeRangeGroup}>
                       <div className={styles.formGroup}>
-                        <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="startTime">
+                        <label
+                          className={`${styles.formLabel} ${styles[theme]}`}
+                          htmlFor="startTime"
+                        >
                           Início
                         </label>
                         <Controller
@@ -780,18 +896,25 @@ const CreateModalNote = ({
                               type="time"
                               id="startTime"
                               className={`${styles.formInput} ${styles[theme]} ${errors.startTime ? styles.error : ''}`}
-                              style={{ '--focus-color': emphasisColor || '#667eea' }}
+                              style={{
+                                '--focus-color': emphasisColor || '#667eea'
+                              }}
                             />
                           )}
                         />
                         <ErrorMessage
                           errors={errors}
                           name="startTime"
-                          render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                          render={({ message }) => (
+                            <div className={styles.errorMessage}>{message}</div>
+                          )}
                         />
                       </div>
                       <div className={styles.formGroup}>
-                        <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="endTime">
+                        <label
+                          className={`${styles.formLabel} ${styles[theme]}`}
+                          htmlFor="endTime"
+                        >
                           Fim
                         </label>
                         <Controller
@@ -803,20 +926,27 @@ const CreateModalNote = ({
                               type="time"
                               id="endTime"
                               className={`${styles.formInput} ${styles[theme]} ${errors.endTime ? styles.error : ''}`}
-                              style={{ '--focus-color': emphasisColor || '#667eea' }}
+                              style={{
+                                '--focus-color': emphasisColor || '#667eea'
+                              }}
                             />
                           )}
                         />
                         <ErrorMessage
                           errors={errors}
                           name="endTime"
-                          render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                          render={({ message }) => (
+                            <div className={styles.errorMessage}>{message}</div>
+                          )}
                         />
                       </div>
                     </div>
                   </div>
                   <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-                    <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="reminderMinutesBefore">
+                    <label
+                      className={`${styles.formLabel} ${styles[theme]}`}
+                      htmlFor="reminderMinutesBefore"
+                    >
                       Lembrete
                     </label>
                     <Controller
@@ -834,7 +964,9 @@ const CreateModalNote = ({
                             )
                           }
                           className={`${styles.formSelect} ${styles[theme]} ${errors.reminderMinutesBefore ? styles.error : ''}`}
-                          style={{ '--focus-color': emphasisColor || '#667eea' }}
+                          style={{
+                            '--focus-color': emphasisColor || '#667eea'
+                          }}
                         >
                           <option value="">Sem lembrete</option>
                           <option value="0">No horário da atividade</option>
@@ -850,10 +982,14 @@ const CreateModalNote = ({
                     <ErrorMessage
                       errors={errors}
                       name="reminderMinutesBefore"
-                      render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                      render={({ message }) => (
+                        <div className={styles.errorMessage}>{message}</div>
+                      )}
                     />
                     <small className={styles.fieldHint}>
-                      O aviso aparecerá na central de notificações. Em atividades recorrentes, cada ocorrência terá seu próprio lembrete.
+                      O aviso aparecerá na central de notificações. Em
+                      atividades recorrentes, cada ocorrência terá seu próprio
+                      lembrete.
                     </small>
                   </div>
                 </div>
@@ -863,7 +999,9 @@ const CreateModalNote = ({
                 <div className={`${styles.formSection} ${styles[theme]}`}>
                   <h3
                     className={`${styles.sectionTitle} ${styles[theme]}`}
-                    style={{ '--section-bar-color': emphasisColor || '#667eea' }}
+                    style={{
+                      '--section-bar-color': emphasisColor || '#667eea'
+                    }}
                   >
                     Recorrência
                   </h3>
@@ -879,27 +1017,38 @@ const CreateModalNote = ({
                         <input
                           type="checkbox"
                           checked={Boolean(field.value)}
-                          onChange={(event) => field.onChange(event.target.checked)}
+                          onChange={(event) =>
+                            field.onChange(event.target.checked)
+                          }
                         />
                         <span
                           className={styles.toggleTrack}
-                          style={{ '--toggle-color': emphasisColor || '#667eea' }}
+                          style={{
+                            '--toggle-color': emphasisColor || '#667eea'
+                          }}
                         >
                           <span />
                         </span>
                         <span className={styles.toggleText}>
                           <strong>Repetir esta atividade</strong>
-                          <small>Crie automaticamente as próximas ocorrências.</small>
+                          <small>
+                            Crie automaticamente as próximas ocorrências.
+                          </small>
                         </span>
                       </label>
                     )}
                   />
 
                   {hasRecurrence && (
-                    <div className={`${styles.recurrencePanel} ${styles[theme]}`}>
+                    <div
+                      className={`${styles.recurrencePanel} ${styles[theme]}`}
+                    >
                       <div className={styles.recurrenceGrid}>
                         <div className={styles.formGroup}>
-                          <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="recurrenceFrequency">
+                          <label
+                            className={`${styles.formLabel} ${styles[theme]}`}
+                            htmlFor="recurrenceFrequency"
+                          >
                             Como deseja repetir? *
                           </label>
                           <Controller
@@ -910,9 +1059,13 @@ const CreateModalNote = ({
                                 {...field}
                                 id="recurrenceFrequency"
                                 className={`${styles.formSelect} ${styles[theme]} ${errors.recurrenceFrequency ? styles.error : ''}`}
-                                style={{ '--focus-color': emphasisColor || '#667eea' }}
+                                style={{
+                                  '--focus-color': emphasisColor || '#667eea'
+                                }}
                               >
-                                <option value="weekly">Dias específicos da semana</option>
+                                <option value="weekly">
+                                  Dias específicos da semana
+                                </option>
                                 <option value="daily">Todos os dias</option>
                                 <option value="monthly">Todo mês</option>
                               </select>
@@ -921,12 +1074,19 @@ const CreateModalNote = ({
                           <ErrorMessage
                             errors={errors}
                             name="recurrenceFrequency"
-                            render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                            render={({ message }) => (
+                              <div className={styles.errorMessage}>
+                                {message}
+                              </div>
+                            )}
                           />
                         </div>
 
                         <div className={styles.formGroup}>
-                          <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="recurrenceInterval">
+                          <label
+                            className={`${styles.formLabel} ${styles[theme]}`}
+                            htmlFor="recurrenceInterval"
+                          >
                             Repetir a cada *
                           </label>
                           <div className={styles.intervalField}>
@@ -941,7 +1101,9 @@ const CreateModalNote = ({
                                   min="1"
                                   max="30"
                                   className={`${styles.formInput} ${styles[theme]} ${errors.recurrenceInterval ? styles.error : ''}`}
-                                  style={{ '--focus-color': emphasisColor || '#667eea' }}
+                                  style={{
+                                    '--focus-color': emphasisColor || '#667eea'
+                                  }}
                                 />
                               )}
                             />
@@ -950,12 +1112,21 @@ const CreateModalNote = ({
                           <ErrorMessage
                             errors={errors}
                             name="recurrenceInterval"
-                            render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                            render={({ message }) => (
+                              <div className={styles.errorMessage}>
+                                {message}
+                              </div>
+                            )}
                           />
                         </div>
 
-                        <div className={`${styles.formGroup} ${styles.fullWidth}`}>
-                          <label className={`${styles.formLabel} ${styles[theme]}`} htmlFor="recurrenceEndDate">
+                        <div
+                          className={`${styles.formGroup} ${styles.fullWidth}`}
+                        >
+                          <label
+                            className={`${styles.formLabel} ${styles[theme]}`}
+                            htmlFor="recurrenceEndDate"
+                          >
                             Repetir até *
                           </label>
                           <Controller
@@ -969,22 +1140,32 @@ const CreateModalNote = ({
                                 min={recurrenceStartDate}
                                 max={recurrenceMaxDate}
                                 className={`${styles.formInput} ${styles[theme]} ${errors.recurrenceEndDate ? styles.error : ''}`}
-                                style={{ '--focus-color': emphasisColor || '#667eea' }}
+                                style={{
+                                  '--focus-color': emphasisColor || '#667eea'
+                                }}
                               />
                             )}
                           />
                           <ErrorMessage
                             errors={errors}
                             name="recurrenceEndDate"
-                            render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                            render={({ message }) => (
+                              <div className={styles.errorMessage}>
+                                {message}
+                              </div>
+                            )}
                           />
-                          <small className={styles.fieldHint}>Limite máximo de dois anos.</small>
+                          <small className={styles.fieldHint}>
+                            Limite máximo de dois anos.
+                          </small>
                         </div>
                       </div>
 
                       {recurrenceFrequency === 'weekly' && (
                         <div className={styles.weekDaysGroup}>
-                          <span className={`${styles.formLabel} ${styles[theme]}`}>
+                          <span
+                            className={`${styles.formLabel} ${styles[theme]}`}
+                          >
                             Em quais dias? *
                           </span>
                           <small className={styles.weekDaysHint}>
@@ -994,9 +1175,15 @@ const CreateModalNote = ({
                             name="recurrenceWeekDays"
                             control={control}
                             render={({ field }) => (
-                              <div className={styles.weekDays} role="group" aria-label="Dias da semana">
+                              <div
+                                className={styles.weekDays}
+                                role="group"
+                                aria-label="Dias da semana"
+                              >
                                 {WEEK_DAYS.map((day) => {
-                                  const selected = (field.value || []).includes(day.value);
+                                  const selected = (field.value || []).includes(
+                                    day.value
+                                  );
                                   return (
                                     <button
                                       key={day.value}
@@ -1004,14 +1191,27 @@ const CreateModalNote = ({
                                       title={day.name}
                                       aria-label={day.name}
                                       aria-pressed={selected}
-                                      className={selected ? styles.weekDaySelected : ''}
-                                      style={selected ? { backgroundColor: emphasisColor || '#667eea' } : {}}
+                                      className={
+                                        selected ? styles.weekDaySelected : ''
+                                      }
+                                      style={
+                                        selected
+                                          ? {
+                                              backgroundColor:
+                                                emphasisColor || '#667eea'
+                                            }
+                                          : {}
+                                      }
                                       onClick={() => {
                                         const current = field.value || [];
                                         field.onChange(
                                           selected
-                                            ? current.filter((value) => value !== day.value)
-                                            : [...current, day.value].sort((a, b) => a - b)
+                                            ? current.filter(
+                                                (value) => value !== day.value
+                                              )
+                                            : [...current, day.value].sort(
+                                                (a, b) => a - b
+                                              )
                                         );
                                       }}
                                     >
@@ -1025,7 +1225,11 @@ const CreateModalNote = ({
                           <ErrorMessage
                             errors={errors}
                             name="recurrenceWeekDays"
-                            render={({ message }) => <div className={styles.errorMessage}>{message}</div>}
+                            render={({ message }) => (
+                              <div className={styles.errorMessage}>
+                                {message}
+                              </div>
+                            )}
                           />
                         </div>
                       )}
@@ -1035,7 +1239,9 @@ const CreateModalNote = ({
               )}
             </div>
 
-            <div className={`${styles.sidebar} ${styles[theme]} ${showComments && isMobile ? styles.expanded : ''}`}>
+            <div
+              className={`${styles.sidebar} ${styles[theme]} ${showComments && isMobile ? styles.expanded : ''}`}
+            >
               {showComments && isMobile && (
                 <button
                   className={`${styles.backBtn} ${styles[theme]}`}
@@ -1046,20 +1252,31 @@ const CreateModalNote = ({
                   ← Voltar
                 </button>
               )}
-              <h3 className={`${styles.sectionTitle} ${styles[theme]}`} style={{ '--section-bar-color': emphasisColor || '#667eea' }}>
+              <h3
+                className={`${styles.sectionTitle} ${styles[theme]}`}
+                style={{ '--section-bar-color': emphasisColor || '#667eea' }}
+              >
                 Comentários
               </h3>
-              <div className={`${styles.commentsList} ${styles[theme]}`} ref={commentsRef}>
+              <div
+                className={`${styles.commentsList} ${styles[theme]}`}
+                ref={commentsRef}
+              >
                 {comments.map((comment, index) => (
                   <div
                     key={index}
                     className={`${styles.commentItem} ${styles[theme]}`}
                     style={{ borderLeftColor: emphasisColor || '#667eea' }}
                   >
-                    <div className={`${styles.commentAuthor} ${styles[theme]}`} style={{ color: emphasisColor || '#667eea' }}>
+                    <div
+                      className={`${styles.commentAuthor} ${styles[theme]}`}
+                      style={{ color: emphasisColor || '#667eea' }}
+                    >
                       {comment.author}
                     </div>
-                    <div className={`${styles.commentText} ${styles[theme]}`}>{comment.text}</div>
+                    <div className={`${styles.commentText} ${styles[theme]}`}>
+                      {comment.text}
+                    </div>
                     <div className={`${styles.commentDate} ${styles[theme]}`}>
                       {new Date(comment.created_at).toLocaleString('pt-BR')}
                     </div>

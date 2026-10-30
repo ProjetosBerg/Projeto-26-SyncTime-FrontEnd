@@ -39,6 +39,10 @@ O sistema utiliza rotas públicas para login, cadastro e recuperação de senha,
 - Relatórios mensais por categoria.
 - Gestão de transações com filtros, ordenação, seleção de colunas e exportação em CSV, XLSX e PDF.
 - Calendário de anotações com rotinas por data, períodos do dia e resumo diário.
+- Planejamento diário pela tela Meu Dia, com resumo e progresso da agenda.
+- Recorrência diária, semanal por dias selecionados e mensal.
+- Lembretes persistidos e entregues pela central de notificações.
+- Metas de produtividade calculadas a partir de atividades concluídas.
 - Consulta de feriados nacionais do Brasil com fallback local para 2025.
 - Notificações em tempo real via Socket.IO.
 - Ranking, streak/ofensiva e acompanhamento de presença.
@@ -104,6 +108,8 @@ npm install
 ```env
 VITE_KEY_API_OPENWEATHER=sua_chave_openweather
 VITE_KEY_API_HOLIDAY=sua_chave_abstractapi_holidays
+VITE_API_BASE_URL=http://localhost:3000/api/
+VITE_SOCKET_URL=http://localhost:3000
 ```
 
 3. Confirme as URLs de integração:
@@ -111,10 +117,7 @@ VITE_KEY_API_HOLIDAY=sua_chave_abstractapi_holidays
 - API REST: configurada em `src/services/api.js`.
 - Socket.IO: configurado em `src/hooks/useSocket.js`.
 
-Atualmente o front-end aponta para:
-
-- `https://projeto-26-synctime-backend.onrender.com/api/` para a API REST.
-- `http://localhost:3000` para o servidor Socket.IO.
+As URLs da API REST e do Socket.IO são definidas pelas variáveis de ambiente.
 
 ## Scripts disponíveis
 
@@ -164,31 +167,33 @@ src/
 
 ## Rotas principais
 
-| Rota | Acesso | Descrição |
-| --- | --- | --- |
-| `/` | Público | Tela inicial de acesso |
-| `/login` | Público | Autenticação do usuário |
-| `/register` | Público | Cadastro de usuário |
-| `/esqueceu-senha` | Público | Recuperação de senha |
-| `/inicio` | Protegido | Home com clima, inbox e presença |
-| `/dashboard/categoria` | Protegido | Dashboard analítico de categorias |
-| `/anotacoes` | Protegido | Calendário de rotinas e anotações |
-| `/configuracoes` | Protegido | Central de configurações |
-| `/categoria` | Protegido | Listagem de categorias |
-| `/categoria/form` | Protegido | Criação de categoria |
-| `/categoria/form/:id` | Protegido | Edição de categoria |
-| `/record-type` | Protegido | Listagem de tipos de registro |
-| `/record-type/form` | Protegido | Criação de tipo de registro |
-| `/record-type/form/:id` | Protegido | Edição de tipo de registro |
-| `/custom-fields` | Protegido | Listagem de campos personalizados |
-| `/custom-fields/form` | Protegido | Criação de campo personalizado |
-| `/custom-fields/form/:id` | Protegido | Edição de campo personalizado |
-| `/relatorios/categoria/relatorio-mesal/:id` | Protegido | Relatório mensal de uma categoria |
-| `/relatorios/categoria/relatorio-mesal/form` | Protegido | Criação de relatório mensal |
-| `/relatorios/categoria/relatorio-mesal/form/:id` | Protegido | Edição de relatório mensal |
-| `/relatorios/categoria/transações` | Protegido | Listagem de transações |
-| `/relatorios/categoria/transações/form` | Protegido | Criação de transação |
-| `/relatorios/categoria/transações/form/:id` | Protegido | Edição de transação |
+| Rota                                             | Acesso    | Descrição                         |
+| ------------------------------------------------ | --------- | --------------------------------- |
+| `/`                                              | Público   | Tela inicial de acesso            |
+| `/login`                                         | Público   | Autenticação do usuário           |
+| `/register`                                      | Público   | Cadastro de usuário               |
+| `/esqueceu-senha`                                | Público   | Recuperação de senha              |
+| `/inicio`                                        | Protegido | Home com clima, inbox e presença  |
+| `/meu-dia`                                       | Protegido | Planejamento e progresso diário   |
+| `/metas`                                         | Protegido | Metas de produtividade            |
+| `/dashboard/categoria`                           | Protegido | Dashboard analítico de categorias |
+| `/anotacoes`                                     | Protegido | Calendário de rotinas e anotações |
+| `/configuracoes`                                 | Protegido | Central de configurações          |
+| `/categoria`                                     | Protegido | Listagem de categorias            |
+| `/categoria/form`                                | Protegido | Criação de categoria              |
+| `/categoria/form/:id`                            | Protegido | Edição de categoria               |
+| `/record-type`                                   | Protegido | Listagem de tipos de registro     |
+| `/record-type/form`                              | Protegido | Criação de tipo de registro       |
+| `/record-type/form/:id`                          | Protegido | Edição de tipo de registro        |
+| `/custom-fields`                                 | Protegido | Listagem de campos personalizados |
+| `/custom-fields/form`                            | Protegido | Criação de campo personalizado    |
+| `/custom-fields/form/:id`                        | Protegido | Edição de campo personalizado     |
+| `/relatorios/categoria/relatorio-mesal/:id`      | Protegido | Relatório mensal de uma categoria |
+| `/relatorios/categoria/relatorio-mesal/form`     | Protegido | Criação de relatório mensal       |
+| `/relatorios/categoria/relatorio-mesal/form/:id` | Protegido | Edição de relatório mensal        |
+| `/relatorios/categoria/transações`               | Protegido | Listagem de transações            |
+| `/relatorios/categoria/transações/form`          | Protegido | Criação de transação              |
+| `/relatorios/categoria/transações/form/:id`      | Protegido | Edição de transação               |
 
 ## Integrações
 
