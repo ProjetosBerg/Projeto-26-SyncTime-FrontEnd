@@ -284,7 +284,9 @@ function App() {
       <UserProvider>
         <PageTitle />
         <Message />
-        <Suspense fallback={<LoadingSpinner message="Carregando página..." />}>
+        <Suspense
+          fallback={<LoadingSpinner message="Carregando página..." fullscreen />}
+        >
           <Layout>
             <Switch>
               {/* Rotas AUTH */}
