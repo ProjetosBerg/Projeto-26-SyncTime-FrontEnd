@@ -25,6 +25,33 @@ const getApiErrorMessage = (error, fallback) =>
 
 let refreshRequest = null;
 
+const isAuthenticationError = (error) =>
+  error?.response?.status === 401 || error?.response?.status === 403;
+
+const refreshAccessToken = async () => {
+  if (!refreshRequest) {
+    refreshRequest = api
+      .post(
+        '/auth/refresh',
+        {},
+        { headers: { 'X-Requested-With': 'XMLHttpRequest' } }
+      )
+      .then((response) => {
+        const newToken = response.data?.data?.token;
+        if (!newToken) throw new Error('Token de acesso não retornado');
+
+        localStorage.setItem('token', newToken);
+        api.defaults.headers.Authorization = `Bearer ${newToken}`;
+        return newToken;
+      })
+      .finally(() => {
+        refreshRequest = null;
+      });
+  }
+
+  return refreshRequest;
+};
+
 export default function useAuth() {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -92,14 +119,48 @@ export default function useAuth() {
       setAuthenticated(true);
       setLoading(false);
       return true;
-    } catch {
-      if (!handlingUnauthorized.current) {
-        handlingUnauthorized.current = true;
-        clearLocalSession(true);
+    } catch (validationError) {
+      if (validationError?.response?.status === 401) {
+        try {
+          await refreshAccessToken();
+          await api.post('/auth/validate', {
+            sessionId: getMemorizedFiltersUsers()?.sessionId
+          });
+
+          handlingUnauthorized.current = false;
+          setAuthenticated(true);
+          setLoading(false);
+          return true;
+        } catch (refreshError) {
+          if (isAuthenticationError(refreshError)) {
+            if (!handlingUnauthorized.current) {
+              handlingUnauthorized.current = true;
+              clearLocalSession(true);
+            }
+            return false;
+          }
+
+          console.error('Falha temporária ao renovar sessão:', refreshError);
+        }
+      } else if (isAuthenticationError(validationError)) {
+        if (!handlingUnauthorized.current) {
+          handlingUnauthorized.current = true;
+          clearLocalSession(true);
+        }
+        return false;
+      } else {
+        console.error('Falha temporária ao validar sessão:', validationError);
       }
+
+      setAuthenticated(true);
+      setLoading(false);
+      setFlashMessage(
+        'Não foi possível validar sua sessão agora. Tentaremos novamente automaticamente.',
+        'warning'
+      );
       return false;
     }
-  }, [clearLocalSession, getMemorizedFiltersUsers]);
+  }, [clearLocalSession, getMemorizedFiltersUsers, setFlashMessage]);
 
   useEffect(() => {
     if (!hasValidated.current) {
@@ -133,24 +194,7 @@ export default function useAuth() {
           originalRequest._retry = true;
 
           try {
-            if (!refreshRequest) {
-              refreshRequest = api
-                .post(
-                  '/auth/refresh',
-                  {},
-                  { headers: { 'X-Requested-With': 'XMLHttpRequest' } }
-                )
-                .finally(() => {
-                  refreshRequest = null;
-                });
-            }
-
-            const refreshResponse = await refreshRequest;
-            const newToken = refreshResponse.data?.data?.token;
-            if (!newToken) throw new Error('Token de acesso nao retornado');
-
-            localStorage.setItem('token', newToken);
-            api.defaults.headers.Authorization = `Bearer ${newToken}`;
+            const newToken = await refreshAccessToken();
             if (typeof originalRequest.headers?.set === 'function') {
               originalRequest.headers.set(
                 'Authorization',
@@ -164,14 +208,22 @@ export default function useAuth() {
             }
             handlingUnauthorized.current = false;
             return api(originalRequest);
-          } catch {
-            // A requisicao de refresh trata a limpeza local ao retornar 401.
+          } catch (refreshError) {
+            if (
+              isAuthenticationError(refreshError) &&
+              !handlingUnauthorized.current
+            ) {
+              handlingUnauthorized.current = true;
+              clearLocalSession(true);
+            }
+            return Promise.reject(refreshError);
           }
         }
 
         if (
           error.response?.status === 401 &&
           !isPublicAuthRequest &&
+          !requestUrl.includes('/auth/refresh') &&
           !requestUrl.includes('/user/logout') &&
           !handlingUnauthorized.current
         ) {
