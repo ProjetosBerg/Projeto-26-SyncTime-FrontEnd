@@ -1,5 +1,6 @@
 // ⚙️ React e bibliotecas externas
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Bell,
   Check,
@@ -28,24 +29,13 @@ import {
   POSSIBLE_FILTERS_ENTITIES,
   useMemorizeFilters
 } from '../../hooks/useMemorizeInputsFilters';
+import {
+  latestNotificationsQueryOptions,
+  mapSocketNotification,
+  NOTIFICATIONS_QUERY_KEY
+} from './notificationQuery';
 
 const MAX_NOTIFICATIONS_PER_REQUEST = 100;
-
-const formatRelativeTime = (dateStr) => {
-  const date = new Date(dateStr);
-  const diff = Date.now() - date.getTime();
-
-  if (!Number.isFinite(diff) || diff < 60000) return 'Agora';
-
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `${minutes} min atrás`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hora${hours > 1 ? 's' : ''} atrás`;
-
-  const days = Math.floor(hours / 24);
-  return `${days} dia${days > 1 ? 's' : ''} atrás`;
-};
 
 const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
   const { theme } = useTheme();
@@ -53,9 +43,12 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
   const [filter, setFilter] = useState('todas');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [typeFilter, setTypeFilter] = useState('todos');
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [notifications, setNotifications] = useState(
+    () => queryClient.getQueryData(NOTIFICATIONS_QUERY_KEY) || []
+  );
   const [markingAll, setMarkingAll] = useState(false);
+  const [clearingRead, setClearingRead] = useState(false);
   const history = useHistory();
   const { setFlashMessage } = useFlashMessage();
   const { getMemorizedFilters: getMemorizedFiltersUsers } = useMemorizeFilters(
@@ -66,24 +59,42 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
 
   const { on: socketOn, off: socketOff } = useSocket(userId);
 
+  const notificationsQuery = useQuery(latestNotificationsQueryOptions);
+  const loading = notificationsQuery.isPending && notifications.length === 0;
+
+  const updateNotifications = useCallback(
+    (updater) => {
+      setNotifications((currentNotifications) => {
+        const nextNotifications =
+          typeof updater === 'function'
+            ? updater(currentNotifications)
+            : updater;
+
+        queryClient.setQueryData(
+          NOTIFICATIONS_QUERY_KEY,
+          nextNotifications
+        );
+        return nextNotifications;
+      });
+    },
+    [queryClient]
+  );
+
+  useEffect(() => {
+    if (notificationsQuery.data) {
+      setNotifications(notificationsQuery.data);
+    }
+  }, [notificationsQuery.data]);
+
   const addNewNotification = useCallback(
     (newNotifData) => {
-      const mappedNewNotif = {
-        id: newNotifData.id,
-        text: newNotifData.title,
-        time: formatRelativeTime(newNotifData.createdAt),
-        read: false,
-        entity: newNotifData.entity,
-        idEntity: newNotifData.idEntity,
-        link: newNotifData.path,
-        typeOfAction: newNotifData.typeOfAction
-      };
+      const mappedNewNotif = mapSocketNotification(newNotifData);
 
-      setNotifications((prev) => [mappedNewNotif, ...prev]);
+      updateNotifications((prev) => [mappedNewNotif, ...prev].slice(0, 100));
 
       setFlashMessage('Nova notificação recebida!', 'info');
     },
-    [setFlashMessage]
+    [setFlashMessage, updateNotifications]
   );
 
   const getTypeColor = (entity) => {
@@ -106,34 +117,6 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
     };
     return colors[action] || styles.actionDefault;
   };
-
-  const fetchNotifications = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await ServiceNotification.getByAllNotification();
-      if (response.data.status === 'OK') {
-        const mappedNotifications = response.data.data.map((n) => ({
-          id: n.id,
-          text: n.title,
-          time: formatRelativeTime(n.created_at),
-          read: n.isRead,
-          entity: n.entity,
-          idEntity: n.idEntity,
-          link: n.path,
-          typeOfAction: n.typeOfAction
-        }));
-        setNotifications(mappedNotifications);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar notificações:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
 
   useEffect(() => {
     ServiceNotification.updateAllNotificationNew().catch((error) => {
@@ -189,7 +172,7 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
 
     try {
       await ServiceNotification.markReadNotification({ ids: [id] });
-      setNotifications((prev) =>
+      updateNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, read: true } : n))
       );
       if (wasUnread) onNotificationChange?.(-1);
@@ -231,7 +214,7 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
 
       if (markedIds.length > 0) {
         const markedSet = new Set(markedIds);
-        setNotifications((currentNotifications) =>
+        updateNotifications((currentNotifications) =>
           currentNotifications.map((notification) =>
             markedSet.has(notification.id)
               ? { ...notification, read: true }
@@ -263,7 +246,7 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
   const deleteNotification = async (id) => {
     try {
       await ServiceNotification.deleteNotification({ ids: [id] });
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      updateNotifications((prev) => prev.filter((n) => n.id !== id));
       setFlashMessage('Notificação deletada', 'success');
     } catch (error) {
       console.error('Erro ao deletar notificação:', error);
@@ -330,15 +313,51 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
     if (readNotifications.length === 0) return;
 
     const readIds = readNotifications.map((n) => n.id);
+    const deletedIds = [];
+    let failedRequest = null;
+
     try {
-      await ServiceNotification.deleteNotification({ ids: readIds });
-      setNotifications((prev) => {
-        const deletedIds = new Set(readIds);
-        return prev.filter((n) => !deletedIds.has(n.id));
-      });
-      setFlashMessage('Notificações lidas limpas com sucesso', 'success');
-    } catch (error) {
-      console.error('Erro ao limpar notificações lidas:', error);
+      setClearingRead(true);
+
+      for (
+        let index = 0;
+        index < readIds.length;
+        index += MAX_NOTIFICATIONS_PER_REQUEST
+      ) {
+        const batch = readIds.slice(
+          index,
+          index + MAX_NOTIFICATIONS_PER_REQUEST
+        );
+
+        try {
+          await ServiceNotification.deleteNotification({ ids: batch });
+          deletedIds.push(...batch);
+        } catch (error) {
+          failedRequest = error;
+          break;
+        }
+      }
+
+      if (deletedIds.length > 0) {
+        const deletedSet = new Set(deletedIds);
+        updateNotifications((prev) =>
+          prev.filter((notification) => !deletedSet.has(notification.id))
+        );
+      }
+
+      if (failedRequest) {
+        console.error('Erro ao limpar notificações lidas:', failedRequest);
+        setFlashMessage(
+          deletedIds.length > 0
+            ? `${deletedIds.length} notificações foram removidas. Tente novamente para concluir as restantes.`
+            : 'Erro ao limpar notificações lidas',
+          'error'
+        );
+      } else {
+        setFlashMessage('Notificações lidas limpas com sucesso', 'success');
+      }
+    } finally {
+      setClearingRead(false);
     }
   };
 
@@ -523,9 +542,10 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
               <button
                 onClick={clearReadNotifications}
                 className={styles.clearButton}
+                disabled={clearingRead}
               >
                 <Trash2 className={styles.trashIcon} />
-                Limpar
+                {clearingRead ? 'Limpando...' : 'Limpar'}
               </button>
             )}
           </div>

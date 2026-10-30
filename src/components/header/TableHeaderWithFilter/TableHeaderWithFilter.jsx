@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Filter, X, Plus, ChevronDown, Check, RotateCcw, Download } from 'lucide-react';
+import {
+  ArrowLeft,
+  Filter,
+  X,
+  Plus,
+  ChevronDown,
+  Check,
+  RotateCcw,
+  Download,
+  Layers3
+} from 'lucide-react';
 import styles from './TableHeaderWithFilter.module.css';
 import { useTheme } from '../../../hooks/useTheme';
 import { useEmphasisColor } from '../../../hooks/useEmphasisColor';
@@ -7,7 +17,13 @@ import xlsxImage from '../../../assets/xlsx.png';
 import pdfImage from '../../../assets/pdf.png';
 import csvImage from '../../../assets/csv.png';
 const TableHeaderWithFilter = ({ 
-  title, 
+  title,
+  eyebrow = 'Organização',
+  subtitle,
+  onBack,
+  onCreate,
+  backButtonLabel = 'Voltar',
+  createButtonLabel = 'Criar novo',
   columns = [], 
   onFiltersChange,
   showDisabledToggle = false,
@@ -175,8 +191,33 @@ const TableHeaderWithFilter = ({
   };
 
   return (
-    <div className={`${styles.headerContainer} ${styles[theme]}`}>
-      <h2 className={styles.headerTitle}>{title}</h2>
+    <div
+      className={`${styles.headerContainer} ${styles[theme]} ${onBack || onCreate ? styles.pageHeader : ''}`}
+      style={{ '--accent-color': accentColor }}
+    >
+      <div className={styles.headerIdentity}>
+        {onBack && (
+          <button
+            type="button"
+            className={styles.backButton}
+            onClick={onBack}
+            aria-label={backButtonLabel}
+            title={backButtonLabel}
+          >
+            <ArrowLeft size={20} />
+          </button>
+        )}
+
+        <span className={styles.headerIcon} aria-hidden="true">
+          <Layers3 size={21} />
+        </span>
+
+        <div className={styles.headerHeading}>
+          <span>{eyebrow}</span>
+          <h2 className={styles.headerTitle}>{title}</h2>
+          {subtitle && <p className={styles.headerSubtitle}>{subtitle}</p>}
+        </div>
+      </div>
       
       <div className={styles.headerActions}>
         <div className={styles.filterContainer} ref={panelRef}>
@@ -400,6 +441,17 @@ const TableHeaderWithFilter = ({
             />
             Mostrar desabilitados
           </label>
+        )}
+
+        {onCreate && (
+          <button
+            type="button"
+            className={styles.primaryAction}
+            onClick={onCreate}
+          >
+            <Plus size={18} />
+            {createButtonLabel}
+          </button>
         )}
       </div>
     </div>

@@ -235,6 +235,8 @@ const DashboardCategoryManager = () => {
     <div>
       <TableHeaderWithFilterDashboard
         title="Dashboard de Categorias"
+        eyebrow="Central de análises"
+        subtitle="Explore indicadores, tendências e resultados em um só lugar."
         columns={filterColumns}
         onFiltersChange={handleFiltersChange}
         isExportacao={true}

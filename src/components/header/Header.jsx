@@ -1,5 +1,6 @@
 // ⚙️ React e bibliotecas externas
 import { lazy, memo, Suspense, useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Bell, Zap, User } from 'lucide-react';
 
 // 💅 Estilos
@@ -15,14 +16,16 @@ import {
 import { useSocket } from '../../hooks/useSocket';
 import ServiceUsers from '../../services/ServiceUsers';
 import ServiceNotification from '../notification/services/ServiceNotification';
+import { latestNotificationsQueryOptions } from '../notification/notificationQuery';
 
 const Streak = lazy(() => import('../streak/Streak'));
-const NotificationsDropdown = lazy(
-  () => import('../notification/NotificationsDropdown')
-);
+const loadNotificationsDropdown = () =>
+  import('../notification/NotificationsDropdown');
+const NotificationsDropdown = lazy(loadNotificationsDropdown);
 const ProfileDropdown = lazy(() => import('../settings/ProfileDropdown'));
 
 const Header = () => {
+  const queryClient = useQueryClient();
   const { emphasisColor } = useEmphasisColor();
   const { getMemorizedFilters, memorizeFilters } = useMemorizeFilters(
     POSSIBLE_FILTERS_ENTITIES.USERS
@@ -62,6 +65,11 @@ const Header = () => {
       setNotificationCount(0);
     }
   }, []);
+
+  const preloadNotifications = useCallback(() => {
+    void loadNotificationsDropdown();
+    void queryClient.prefetchQuery(latestNotificationsQueryOptions);
+  }, [queryClient]);
 
   const fetchUserData = useCallback(async () => {
     const currentUser = getMemorizedFilters();
@@ -118,6 +126,20 @@ const Header = () => {
       fetchNotificationCount();
     }
   }, [fetchNotificationCount, fetchStreakData, fetchUserData, userId]);
+
+  useEffect(() => {
+    if (!userId) return undefined;
+
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(preloadNotifications, {
+        timeout: 2000
+      });
+      return () => window.cancelIdleCallback?.(idleId);
+    }
+
+    const timeoutId = window.setTimeout(preloadNotifications, 1200);
+    return () => window.clearTimeout(timeoutId);
+  }, [preloadNotifications, userId]);
 
   useEffect(() => {
     const handleProfileUpdate = () => {
@@ -258,8 +280,15 @@ const Header = () => {
               {/* Notifications */}
               <div className={styles.notificationWrapper}>
                 <button
-                  onClick={() => setShowNotifications(!showNotifications)}
+                  onClick={() => {
+                    preloadNotifications();
+                    setShowNotifications(!showNotifications);
+                  }}
+                  onMouseEnter={preloadNotifications}
+                  onFocus={preloadNotifications}
+                  onTouchStart={preloadNotifications}
                   className={styles.notificationButton}
+                  aria-label="Abrir notificações"
                 >
                   <Bell className={styles.bellIcon} />
                   {notificationCount > 0 && (

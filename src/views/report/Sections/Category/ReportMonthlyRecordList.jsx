@@ -13,7 +13,6 @@ import { useEmphasisColor } from '../../../../hooks/useEmphasisColor';
 
 // 🧩 Componentes
 import LoadingSpinner from '../../../../components/loading/LoadingSpinner';
-import ActionHeader from '../../../../components/header/ActionHeader/ActionHeader';
 import ConfirmModal from '../../../../components/modal/ConfirmModal';
 import Table from '../../../../components/table/Table';
 import Pagination from '../../../../components/pagination/Pagination';
@@ -97,7 +96,14 @@ const ReportMonthlyRecordList = () => {
     };
 
     fetchMonthlyRecords();
-  }, [currentPage, sortBy, order, activeFilters, idCategory]);
+  }, [
+    currentPage,
+    sortBy,
+    order,
+    activeFilters,
+    idCategory,
+    setFlashMessage
+  ]);
 
     useEffect(() => {
       const fetchCategory = async () => {
@@ -335,15 +341,13 @@ const ReportMonthlyRecordList = () => {
 
   return (
     <div className={`${styles.container} ${styles[theme]}`}>
-      <ActionHeader
-        onBack={handleBack}
-        onCreate={handleCreate}
-        backButtonLabel="Voltar"
-        createButtonLabel="Novo Registro"
-      />
-
       <TableHeaderWithFilter
         title="Registros Mensais"
+        eyebrow="Planejamento financeiro"
+        subtitle="Organize metas, saldos e resultados de cada período."
+        onBack={handleBack}
+        onCreate={handleCreate}
+        createButtonLabel="Novo registro"
         columns={filterColumns}
         onFiltersChange={handleFiltersChange}
       />

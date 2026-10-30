@@ -6,7 +6,6 @@ import useFlashMessage from '../../../../../hooks/userFlashMessage';
 import { useTheme } from '../../../../../hooks/useTheme';
 import { useEmphasisColor } from '../../../../../hooks/useEmphasisColor';
 import LoadingSpinner from '../../../../../components/loading/LoadingSpinner';
-import ActionHeader from '../../../../../components/header/ActionHeader/ActionHeader';
 import TableHeaderWithFilter from '../../../../../components/header/TableHeaderWithFilter/TableHeaderWithFilter';
 import ConfirmModal from '../../../../../components/modal/ConfirmModal';
 import styles from './TransactionList.module.css';
@@ -370,10 +369,7 @@ const TransactionList = () => {
         setLoadError(
           'Não foi possível carregar as transações. Tente novamente.'
         );
-        setFlashMessage(
-          'Erro ao buscar transações',
-          'error'
-        );
+        setFlashMessage('Erro ao buscar transações', 'error');
       } finally {
         if (requestId === latestRequestId.current) {
           setLoading(false);
@@ -531,15 +527,13 @@ const TransactionList = () => {
 
   return (
     <div className={`${styles.container} ${styles[theme]}`}>
-      <ActionHeader
-        onBack={handleBack}
-        onCreate={handleCreate}
-        backButtonLabel="Voltar"
-        createButtonLabel="Nova transação"
-      />
-
       <TableHeaderWithFilter
         title="Transações"
+        eyebrow="Movimentações do período"
+        subtitle="Visualize, filtre e gerencie os lançamentos deste registro."
+        onBack={handleBack}
+        onCreate={handleCreate}
+        createButtonLabel="Nova transação"
         columns={filterColumns}
         onFiltersChange={handleFiltersChange}
         isExportacao={true}

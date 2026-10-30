@@ -450,8 +450,13 @@
   white-space: nowrap;
 }
 
-.clearButton:hover {
+.clearButton:hover:not(:disabled) {
   background-color: #fee2e2;
+}
+
+.clearButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .trashIcon {

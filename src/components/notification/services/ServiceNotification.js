@@ -2,10 +2,8 @@ import api from "../../../services/api";
 
 class ServiceNotification {
   getByAllNotification() {
-    const params = new URLSearchParams();
-    params.append("order", "DESC");
-    return api.get(`/notification/userId?${params.toString()}`, {
-      params: { isListAll: true },
+    return api.get('/notification/userId', {
+      params: { page: 1, limit: 100, order: 'DESC' }
     });
   }
   getByIdNotification(id) {

@@ -6,7 +6,8 @@ import {
   ChevronDown,
   Check,
   RotateCcw,
-  Download
+  Download,
+  ChartNoAxesCombined
 } from 'lucide-react';
 import styles from './TableHeaderWithFilter.module.css';
 import { useTheme } from '../../../hooks/useTheme';
@@ -15,6 +16,8 @@ import pdfImage from '../../../assets/pdf.png';
 
 const TableHeaderWithFilterDashboard = ({
   title,
+  eyebrow = 'Central de análises',
+  subtitle,
   columns = [],
   onFiltersChange,
   showDisabledToggle = false,
@@ -184,9 +187,15 @@ const TableHeaderWithFilterDashboard = ({
       className={`${styles.headerContainer} ${styles[theme]}`}
       style={{ '--accent-color': accentColor }}
     >
-      <div className={styles.headerHeading}>
-        <span>Central de análises</span>
-        <h2 className={styles.headerTitle}>{title}</h2>
+      <div className={styles.headerIdentity}>
+        <span className={styles.headerIcon} aria-hidden="true">
+          <ChartNoAxesCombined size={21} />
+        </span>
+        <div className={styles.headerHeading}>
+          <span>{eyebrow}</span>
+          <h2 className={styles.headerTitle}>{title}</h2>
+          {subtitle && <p className={styles.headerSubtitle}>{subtitle}</p>}
+        </div>
       </div>
 
       <div className={styles.headerActions}>
