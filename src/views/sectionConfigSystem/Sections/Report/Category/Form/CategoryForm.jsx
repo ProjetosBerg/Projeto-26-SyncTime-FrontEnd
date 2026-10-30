@@ -190,7 +190,9 @@ const CategoryForm = () => {
   };
 
   if (isLoadingData) {
-    return <LoadingSpinner message="Carregando os dados da categoria." />;
+    return (
+      <LoadingSpinner message="Carregando os dados da categoria." fullscreen />
+    );
   }
 
   return (

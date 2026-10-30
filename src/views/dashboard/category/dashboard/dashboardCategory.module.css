@@ -978,26 +978,14 @@
 }
 
 .container.light {
-  background:
-    radial-gradient(
-      circle at 90% 2%,
-      color-mix(in srgb, var(--dashboard-accent) 7%, transparent),
-      transparent 24rem
-    ),
-    #f6f8fc;
+  background: transparent;
 }
 
 .container.dark {
   --dashboard-title: #f1f5f9;
   --dashboard-muted: #94a3b8;
   --dashboard-border: rgba(148, 163, 184, 0.13);
-  background:
-    radial-gradient(
-      circle at 90% 2%,
-      color-mix(in srgb, var(--dashboard-accent) 13%, transparent),
-      transparent 25rem
-    ),
-    #0c1526;
+  background: transparent;
 }
 
 /* Media queries para responsividade */

@@ -245,7 +245,12 @@ const ReportMonthlyRecordForm = () => {
   };
 
   if (isLoadingData) {
-    return <LoadingSpinner message="Carregando os dados do registro mensal." />;
+    return (
+      <LoadingSpinner
+        message="Carregando os dados do registro mensal."
+        fullscreen
+      />
+    );
   }
 
   return (

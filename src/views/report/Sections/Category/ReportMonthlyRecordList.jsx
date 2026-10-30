@@ -336,7 +336,9 @@ const ReportMonthlyRecordList = () => {
     : { key: null, direction: null };
 
   if (loading && monthlyRecords.length === 0 && !status) {
-    return <LoadingSpinner message="Carregando registros mensais..." />;
+    return (
+      <LoadingSpinner message="Carregando registros mensais..." fullscreen />
+    );
   }
 
   return (

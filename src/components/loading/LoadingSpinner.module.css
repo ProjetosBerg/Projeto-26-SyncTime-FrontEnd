@@ -23,8 +23,13 @@
 }
 
 .loadingContainer.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  width: 100vw;
   min-height: 100vh;
   min-height: 100dvh;
+  padding: clamp(1rem, 4vw, 3rem);
 }
 
 .loadingContainer.dark {

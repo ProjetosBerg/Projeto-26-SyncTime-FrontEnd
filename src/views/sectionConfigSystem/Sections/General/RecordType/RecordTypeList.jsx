@@ -164,7 +164,12 @@ const RecordTypeList = () => {
   const sortConfig = sortBy ? { key: sortBy, direction: order } : { key: null, direction: null };
 
   if (loading && recordTypes.length === 0) {
-        return <LoadingSpinner message="Carregando os tipos de registros..." />; 
+        return (
+          <LoadingSpinner
+            message="Carregando os tipos de registros..."
+            fullscreen
+          />
+        );
 
   }
 

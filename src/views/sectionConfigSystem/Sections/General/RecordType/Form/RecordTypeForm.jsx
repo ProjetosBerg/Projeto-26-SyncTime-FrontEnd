@@ -168,7 +168,10 @@ const RecordTypeForm = () => {
 
   if (isLoadingData) {
     return (
-      <LoadingSpinner message="Carregando os dados do tipos de registros..." />
+      <LoadingSpinner
+        message="Carregando os dados do tipos de registros..."
+        fullscreen
+      />
     );
   }
 

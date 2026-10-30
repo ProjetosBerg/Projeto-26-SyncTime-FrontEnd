@@ -562,7 +562,7 @@ const TransactionList = () => {
 
       {showBlockingError ? null : showInitialLoading ? (
         <div className={styles.loadingState} role="status">
-          <LoadingSpinner message="Carregando transações..." />
+          <LoadingSpinner message="Carregando transações..." fullscreen />
         </div>
       ) : !hasTransactions ? (
         <div className={`${styles.emptyState} ${styles[theme]}`}>

@@ -165,7 +165,9 @@ const CategoryList = () => {
   const sortConfig = sortBy ? { key: sortBy, direction: order } : { key: null, direction: null };
 
   if (loading && categories.length === 0) {
-            return <LoadingSpinner message="Carregando categorias..." />; 
+            return (
+              <LoadingSpinner message="Carregando categorias..." fullscreen />
+            );
 
   }
 

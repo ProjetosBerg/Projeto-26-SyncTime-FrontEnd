@@ -285,7 +285,9 @@ const TransactionForm = () => {
   };
 
   if (isLoadingData) {
-    return <LoadingSpinner message="Carregando os dados da transação." />;
+    return (
+      <LoadingSpinner message="Carregando os dados da transação." fullscreen />
+    );
   }
 
   return (

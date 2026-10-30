@@ -431,7 +431,10 @@ const CustomFieldForm = () => {
 
   if (isLoadingData) {
     return (
-      <LoadingSpinner message="Carregando dados do campos customizados..." />
+      <LoadingSpinner
+        message="Carregando dados do campos customizados..."
+        fullscreen
+      />
     );
   }
 

@@ -172,7 +172,9 @@ const CustomFieldsList = () => {
   const sortConfig = sortBy ? { key: sortBy, direction: order } : { key: null, direction: null };
 
   if (loading && customFields.length === 0) {
-    return <LoadingSpinner message="Carregando campos customizados..." />; 
+    return (
+      <LoadingSpinner message="Carregando campos customizados..." fullscreen />
+    );
   }
 
   return (

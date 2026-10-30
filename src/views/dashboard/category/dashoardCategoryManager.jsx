@@ -4,6 +4,7 @@ import DashboardCategory from './dashboard/dashboardCategory';
 import ServiceDashboard from '../services/ServiceDashboard';
 import ServiceCategory from '../../sectionConfigSystem/Sections/Report/Category/services/ServiceCategory';
 import TableHeaderWithFilterDashboard from '../../../components/header/TableHeaderWithFilter/TableHeaderWithFilterDashboard';
+import LoadingSpinner from '../../../components/loading/LoadingSpinner';
 import styles from '../category/dashboard/dashboardCategory.module.css';
 
 const DashboardCategoryManager = () => {
@@ -230,6 +231,10 @@ const DashboardCategoryManager = () => {
       ]
     }
   ];
+
+  if (loading) {
+    return <LoadingSpinner message="Carregando dashboard..." fullscreen />;
+  }
 
   return (
     <div>
