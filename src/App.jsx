@@ -6,38 +6,70 @@ import {
   Redirect,
   useLocation
 } from 'react-router-dom';
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 // 🧩 Componentes
 import Message from './components/flashMessage/Message';
-import Header from './components/header/Header';
-import Footer from './components/footer/Footer';
-import Sidebar from './components/Sidebar/Sidebar';
 import Container from './components/layout/Container';
+import LoadingSpinner from './components/loading/LoadingSpinner';
 // 📄 Páginas
-import Login from './views/auth/Login';
-import Register from './views/auth/Register';
-import LoadingPage from './views/loading/Loading';
-import ForgotPassword from './views/auth/ForgotPassword';
-import StartLogin from './views/auth/StartLogin';
-import Home from './views/home/Home';
-import CategoryList from './views/sectionConfigSystem/Sections/Report/Category/CategoryList';
-import CategoryForm from './views/sectionConfigSystem/Sections/Report/Category/Form/CategoryForm';
-import RecordTypeForm from './views/sectionConfigSystem/Sections/General/RecordType/Form/RecordTypeForm';
-import CustomFieldForm from './views/sectionConfigSystem/Sections/General/CustomFields/Form/CustomFieldsForm';
-import SectionConfigSystem from './views/sectionConfigSystem/SectionConfigSystem';
 
 // 🌐 Contexto
 import { UserProvider } from './context/UserContext';
-import RecordTypeList from './views/sectionConfigSystem/Sections/General/RecordType/RecordTypeList';
-import CustomFieldsList from './views/sectionConfigSystem/Sections/General/CustomFields/CustomFieldsList';
-import ReportMonthlyRecordList from './views/report/Sections/Category/ReportMonthlyRecordList';
-import TransactionList from './views/report/Sections/Category/Transaction/TransactionList';
-import ReportMonthlyRecordForm from './views/report/Sections/Category/Form/ReportMonthlyRecordForm';
-import TransactionForm from './views/report/Sections/Category/Transaction/Form/TransactionForm';
-import Calendar from './views/notes/Calendar/Calendar';
-import DashboardCategoryManager from './views/dashboard/category/dashoardCategoryManager';
-import MyDay from './views/myDay/MyDay';
-import Goals from './views/goals/Goals';
+
+const Header = lazy(() => import('./components/header/Header'));
+const Footer = lazy(() => import('./components/footer/Footer'));
+const Sidebar = lazy(() => import('./components/Sidebar/Sidebar'));
+const Login = lazy(() => import('./views/auth/Login'));
+const Register = lazy(() => import('./views/auth/Register'));
+const ForgotPassword = lazy(() => import('./views/auth/ForgotPassword'));
+const StartLogin = lazy(() => import('./views/auth/StartLogin'));
+const Home = lazy(() => import('./views/home/Home'));
+const CategoryList = lazy(
+  () =>
+    import('./views/sectionConfigSystem/Sections/Report/Category/CategoryList')
+);
+const CategoryForm = lazy(
+  () =>
+    import('./views/sectionConfigSystem/Sections/Report/Category/Form/CategoryForm')
+);
+const RecordTypeForm = lazy(
+  () =>
+    import('./views/sectionConfigSystem/Sections/General/RecordType/Form/RecordTypeForm')
+);
+const CustomFieldForm = lazy(
+  () =>
+    import('./views/sectionConfigSystem/Sections/General/CustomFields/Form/CustomFieldsForm')
+);
+const SectionConfigSystem = lazy(
+  () => import('./views/sectionConfigSystem/SectionConfigSystem')
+);
+const RecordTypeList = lazy(
+  () =>
+    import('./views/sectionConfigSystem/Sections/General/RecordType/RecordTypeList')
+);
+const CustomFieldsList = lazy(
+  () =>
+    import('./views/sectionConfigSystem/Sections/General/CustomFields/CustomFieldsList')
+);
+const ReportMonthlyRecordList = lazy(
+  () => import('./views/report/Sections/Category/ReportMonthlyRecordList')
+);
+const TransactionList = lazy(
+  () => import('./views/report/Sections/Category/Transaction/TransactionList')
+);
+const ReportMonthlyRecordForm = lazy(
+  () => import('./views/report/Sections/Category/Form/ReportMonthlyRecordForm')
+);
+const TransactionForm = lazy(
+  () =>
+    import('./views/report/Sections/Category/Transaction/Form/TransactionForm')
+);
+const Calendar = lazy(() => import('./views/notes/Calendar/Calendar'));
+const DashboardCategoryManager = lazy(
+  () => import('./views/dashboard/category/dashoardCategoryManager')
+);
+const MyDay = lazy(() => import('./views/myDay/MyDay'));
+const Goals = lazy(() => import('./views/goals/Goals'));
 
 const APP_NAME = 'SyncTime';
 
@@ -57,10 +89,22 @@ const pageTitles = [
   { path: '/categoria/form/:id', exact: true, title: 'Editar categoria' },
   { path: '/record-type', exact: true, title: 'Tipos de registro' },
   { path: '/record-type/form', exact: true, title: 'Novo tipo de registro' },
-  { path: '/record-type/form/:id', exact: true, title: 'Editar tipo de registro' },
+  {
+    path: '/record-type/form/:id',
+    exact: true,
+    title: 'Editar tipo de registro'
+  },
   { path: '/custom-fields', exact: true, title: 'Campos personalizados' },
-  { path: '/custom-fields/form', exact: true, title: 'Novo campo personalizado' },
-  { path: '/custom-fields/form/:id', exact: true, title: 'Editar campo personalizado' },
+  {
+    path: '/custom-fields/form',
+    exact: true,
+    title: 'Novo campo personalizado'
+  },
+  {
+    path: '/custom-fields/form/:id',
+    exact: true,
+    title: 'Editar campo personalizado'
+  },
   {
     path: '/relatorios/categoria/relatorio-mesal/:id',
     exact: true,
@@ -235,141 +279,133 @@ function Layout({ children }) {
 }
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
   return (
     <Router>
       <UserProvider>
         <PageTitle />
-        {isLoading ? (
-          <LoadingPage onLoadingComplete={() => setIsLoading(false)} />
-        ) : (
-          <>
-            <Message />
-            <Layout>
-              <Switch>
-                {/* Rotas AUTH */}
-                <PublicRoute exact path="/">
-                  <StartLogin />
-                </PublicRoute>
-                <PublicRoute path="/login">
-                  <Login />
-                </PublicRoute>
-                <PublicRoute path="/register">
-                  <Register />
-                </PublicRoute>
-                <PublicRoute path="/esqueceu-senha">
-                  <ForgotPassword />
-                </PublicRoute>
-                {/* Rotas Inicio */}
+        <Message />
+        <Suspense fallback={<LoadingSpinner message="Carregando página..." />}>
+          <Layout>
+            <Switch>
+              {/* Rotas AUTH */}
+              <PublicRoute exact path="/">
+                <StartLogin />
+              </PublicRoute>
+              <PublicRoute path="/login">
+                <Login />
+              </PublicRoute>
+              <PublicRoute path="/register">
+                <Register />
+              </PublicRoute>
+              <PublicRoute path="/esqueceu-senha">
+                <ForgotPassword />
+              </PublicRoute>
+              {/* Rotas Inicio */}
 
-                <ProtectedRoute path="/inicio">
-                  <Home />
-                </ProtectedRoute>
+              <ProtectedRoute path="/inicio">
+                <Home />
+              </ProtectedRoute>
 
-                <ProtectedRoute exact path="/meu-dia">
-                  <MyDay />
-                </ProtectedRoute>
+              <ProtectedRoute exact path="/meu-dia">
+                <MyDay />
+              </ProtectedRoute>
 
-                <ProtectedRoute exact path="/metas">
-                  <Goals />
-                </ProtectedRoute>
+              <ProtectedRoute exact path="/metas">
+                <Goals />
+              </ProtectedRoute>
 
-                {/* Rotas Configuração do sistema */}
+              {/* Rotas Configuração do sistema */}
 
-                <ProtectedRoute path="/configuracoes">
-                  <SectionConfigSystem />
-                </ProtectedRoute>
-                {/* Rotas de configuração da categoria */}
+              <ProtectedRoute path="/configuracoes">
+                <SectionConfigSystem />
+              </ProtectedRoute>
+              {/* Rotas de configuração da categoria */}
 
-                <ProtectedRoute exact path="/categoria">
-                  <CategoryList />
-                </ProtectedRoute>
+              <ProtectedRoute exact path="/categoria">
+                <CategoryList />
+              </ProtectedRoute>
 
-                <ProtectedRoute exact path="/categoria/form">
-                  <CategoryForm />
-                </ProtectedRoute>
+              <ProtectedRoute exact path="/categoria/form">
+                <CategoryForm />
+              </ProtectedRoute>
 
-                <ProtectedRoute path="/categoria/form/:id">
-                  <CategoryForm />
-                </ProtectedRoute>
-                {/* Rotas de configuração da record type */}
+              <ProtectedRoute path="/categoria/form/:id">
+                <CategoryForm />
+              </ProtectedRoute>
+              {/* Rotas de configuração da record type */}
 
-                <ProtectedRoute exact path="/record-type">
-                  <RecordTypeList />
-                </ProtectedRoute>
-                <ProtectedRoute exact path="/record-type/form">
-                  <RecordTypeForm />
-                </ProtectedRoute>
-                <ProtectedRoute path="/record-type/form/:id">
-                  <RecordTypeForm />
-                </ProtectedRoute>
-                {/* Rotas de configuração da custom fields */}
+              <ProtectedRoute exact path="/record-type">
+                <RecordTypeList />
+              </ProtectedRoute>
+              <ProtectedRoute exact path="/record-type/form">
+                <RecordTypeForm />
+              </ProtectedRoute>
+              <ProtectedRoute path="/record-type/form/:id">
+                <RecordTypeForm />
+              </ProtectedRoute>
+              {/* Rotas de configuração da custom fields */}
 
-                <ProtectedRoute exact path="/custom-fields">
-                  <CustomFieldsList />
-                </ProtectedRoute>
-                <ProtectedRoute exact path="/custom-fields/form">
-                  <CustomFieldForm />
-                </ProtectedRoute>
-                <ProtectedRoute path="/custom-fields/form/:id">
-                  <CustomFieldForm />
-                </ProtectedRoute>
-                {/* Rotas de configuração da relatórios */}
+              <ProtectedRoute exact path="/custom-fields">
+                <CustomFieldsList />
+              </ProtectedRoute>
+              <ProtectedRoute exact path="/custom-fields/form">
+                <CustomFieldForm />
+              </ProtectedRoute>
+              <ProtectedRoute path="/custom-fields/form/:id">
+                <CustomFieldForm />
+              </ProtectedRoute>
+              {/* Rotas de configuração da relatórios */}
 
-                <ProtectedRoute
-                  exact
-                  path="/relatorios/categoria/relatorio-mesal/form"
-                >
-                  <ReportMonthlyRecordForm />
-                </ProtectedRoute>
+              <ProtectedRoute
+                exact
+                path="/relatorios/categoria/relatorio-mesal/form"
+              >
+                <ReportMonthlyRecordForm />
+              </ProtectedRoute>
 
-                <ProtectedRoute
-                  exact
-                  path="/relatorios/categoria/relatorio-mesal/:id"
-                >
-                  <ReportMonthlyRecordList />
-                </ProtectedRoute>
+              <ProtectedRoute
+                exact
+                path="/relatorios/categoria/relatorio-mesal/:id"
+              >
+                <ReportMonthlyRecordList />
+              </ProtectedRoute>
 
-                <ProtectedRoute path="/relatorios/categoria/relatorio-mesal/form/:id">
-                  <ReportMonthlyRecordForm />
-                </ProtectedRoute>
+              <ProtectedRoute path="/relatorios/categoria/relatorio-mesal/form/:id">
+                <ReportMonthlyRecordForm />
+              </ProtectedRoute>
 
-                {/* Rotas de Transactions records categoria */}
+              {/* Rotas de Transactions records categoria */}
 
-                <ProtectedRoute
-                  exact
-                  path="/relatorios/categoria/transações"
-                >
-                  <TransactionList />
-                </ProtectedRoute>
+              <ProtectedRoute exact path="/relatorios/categoria/transações">
+                <TransactionList />
+              </ProtectedRoute>
 
-                <ProtectedRoute
-                  exact
-                  path="/relatorios/categoria/transações/form"
-                >
-                  <TransactionForm />
-                </ProtectedRoute>
-                <ProtectedRoute
-                  exact
-                  path="/relatorios/categoria/transações/form/:id"
-                >
-                  <TransactionForm />
-                </ProtectedRoute>
+              <ProtectedRoute
+                exact
+                path="/relatorios/categoria/transações/form"
+              >
+                <TransactionForm />
+              </ProtectedRoute>
+              <ProtectedRoute
+                exact
+                path="/relatorios/categoria/transações/form/:id"
+              >
+                <TransactionForm />
+              </ProtectedRoute>
 
-                {/* Rotas para anotações */}
+              {/* Rotas para anotações */}
 
-                <ProtectedRoute exact path="/anotacoes">
-                  <Calendar />
-                </ProtectedRoute>
+              <ProtectedRoute exact path="/anotacoes">
+                <Calendar />
+              </ProtectedRoute>
 
-                {/* Rotas para Dashboard */}
-                <ProtectedRoute exact path="/dashboard/categoria">
-                  <DashboardCategoryManager />
-                </ProtectedRoute>
-              </Switch>
-            </Layout>
-          </>
-        )}
+              {/* Rotas para Dashboard */}
+              <ProtectedRoute exact path="/dashboard/categoria">
+                <DashboardCategoryManager />
+              </ProtectedRoute>
+            </Switch>
+          </Layout>
+        </Suspense>
       </UserProvider>
     </Router>
   );

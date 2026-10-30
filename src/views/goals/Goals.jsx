@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
 import {
   CheckCircle2,
   CircleAlert,
@@ -65,33 +67,43 @@ const Goals = () => {
   const { theme } = useTheme();
   const { emphasisColor } = useEmphasisColor();
   const { setFlashMessage } = useFlashMessage();
-  const [goals, setGoals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState(emptyForm);
+  const { handleSubmit, register, reset, watch } = useForm({
+    defaultValues: emptyForm()
+  });
+  const startDate = watch('startDate');
 
-  const loadGoals = useCallback(async () => {
-    try {
-      setLoading(true);
-      setLoadError('');
+  const {
+    data: goals = [],
+    error: goalsRequestError,
+    isPending: loading,
+    refetch
+  } = useQuery({
+    queryKey: ['goals'],
+    queryFn: async () => {
       const response = await ServiceGoals.list();
-      setGoals(response.data.data || []);
-    } catch (error) {
-      const message = getErrorMessage(error, 'Erro ao carregar metas');
-      setLoadError(message);
-      setFlashMessage(message, 'error');
-    } finally {
-      setLoading(false);
+      return response.data?.data || [];
     }
-  }, [setFlashMessage]);
+  });
 
-  useEffect(() => {
-    loadGoals();
-  }, [loadGoals]);
+  const saveMutation = useMutation({
+    mutationFn: ({ id, payload }) =>
+      id ? ServiceGoals.update(id, payload) : ServiceGoals.create(payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goals'] })
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => ServiceGoals.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goals'] })
+  });
+
+  const loadError = goalsRequestError
+    ? getErrorMessage(goalsRequestError, 'Erro ao carregar metas')
+    : '';
+  const saving = saveMutation.isPending;
+  const deletingId = deleteMutation.isPending ? deleteMutation.variables : null;
 
   useEffect(() => {
     if (!showForm) return undefined;
@@ -106,13 +118,13 @@ const Goals = () => {
 
   const openCreate = () => {
     setEditingId(null);
-    setForm(emptyForm());
+    reset(emptyForm());
     setShowForm(true);
   };
 
   const openEdit = (goal) => {
     setEditingId(goal.id);
-    setForm({
+    reset({
       title: goal.title || '',
       description: goal.description || '',
       targetCount: goal.targetCount || 1,
@@ -122,9 +134,8 @@ const Goals = () => {
     setShowForm(true);
   };
 
-  const submit = async (event) => {
-    event.preventDefault();
-    if (form.endDate < form.startDate) {
+  const submit = async (formData) => {
+    if (formData.endDate < formData.startDate) {
       setFlashMessage(
         'A data final deve ser igual ou posterior à inicial',
         'error'
@@ -133,27 +144,22 @@ const Goals = () => {
     }
 
     try {
-      setSaving(true);
       const payload = {
-        ...form,
-        title: form.title.trim(),
-        description: form.description.trim(),
-        targetCount: Number(form.targetCount)
+        ...formData,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        targetCount: Number(formData.targetCount)
       };
 
-      if (editingId) await ServiceGoals.update(editingId, payload);
-      else await ServiceGoals.create(payload);
+      await saveMutation.mutateAsync({ id: editingId, payload });
 
       setFlashMessage(
         editingId ? 'Meta atualizada com sucesso' : 'Meta criada com sucesso',
         'success'
       );
       setShowForm(false);
-      await loadGoals();
     } catch (error) {
       setFlashMessage(getErrorMessage(error, 'Erro ao salvar meta'), 'error');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -161,14 +167,10 @@ const Goals = () => {
     if (!window.confirm(`Excluir a meta “${goal.title}”?`)) return;
 
     try {
-      setDeletingId(goal.id);
-      await ServiceGoals.delete(goal.id);
+      await deleteMutation.mutateAsync(goal.id);
       setFlashMessage('Meta excluída com sucesso', 'success');
-      await loadGoals();
     } catch (error) {
       setFlashMessage(getErrorMessage(error, 'Erro ao excluir meta'), 'error');
-    } finally {
-      setDeletingId(null);
     }
   };
 
@@ -201,7 +203,7 @@ const Goals = () => {
           <CircleAlert size={42} />
           <h2>Não foi possível carregar suas metas</h2>
           <p>{loadError}</p>
-          <button type="button" onClick={loadGoals}>
+          <button type="button" onClick={() => refetch()}>
             <RefreshCw size={17} /> Tentar novamente
           </button>
         </section>
@@ -307,7 +309,7 @@ const Goals = () => {
         >
           <form
             className={`${styles.modal} ${styles[theme]}`}
-            onSubmit={submit}
+            onSubmit={handleSubmit(submit)}
             role="dialog"
             aria-modal="true"
             aria-labelledby="goal-form-title"
@@ -332,21 +334,12 @@ const Goals = () => {
                 autoFocus
                 minLength="2"
                 maxLength="100"
-                value={form.title}
-                onChange={(event) =>
-                  setForm({ ...form, title: event.target.value })
-                }
+                {...register('title', { required: true })}
               />
             </label>
             <label>
               Descrição
-              <textarea
-                maxLength="500"
-                value={form.description}
-                onChange={(event) =>
-                  setForm({ ...form, description: event.target.value })
-                }
-              />
+              <textarea maxLength="500" {...register('description')} />
             </label>
             <label>
               Quantidade de atividades concluídas *
@@ -355,10 +348,10 @@ const Goals = () => {
                 type="number"
                 min="1"
                 max="100000"
-                value={form.targetCount}
-                onChange={(event) =>
-                  setForm({ ...form, targetCount: event.target.value })
-                }
+                {...register('targetCount', {
+                  required: true,
+                  valueAsNumber: true
+                })}
               />
             </label>
             <div className={styles.dates}>
@@ -367,10 +360,7 @@ const Goals = () => {
                 <input
                   required
                   type="date"
-                  value={form.startDate}
-                  onChange={(event) =>
-                    setForm({ ...form, startDate: event.target.value })
-                  }
+                  {...register('startDate', { required: true })}
                 />
               </label>
               <label>
@@ -378,11 +368,8 @@ const Goals = () => {
                 <input
                   required
                   type="date"
-                  min={form.startDate}
-                  value={form.endDate}
-                  onChange={(event) =>
-                    setForm({ ...form, endDate: event.target.value })
-                  }
+                  min={startDate}
+                  {...register('endDate', { required: true })}
                 />
               </label>
             </div>

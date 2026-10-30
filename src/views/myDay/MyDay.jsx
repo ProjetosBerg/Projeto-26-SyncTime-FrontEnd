@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   AlertCircle,
   CalendarDays,
@@ -15,7 +16,6 @@ import {
   Tag
 } from 'lucide-react';
 import { useEmphasisColor } from '../../hooks/useEmphasisColor';
-import useFlashMessage from '../../hooks/userFlashMessage';
 import { useTheme } from '../../hooks/useTheme';
 import ServiceMyDay from './services/ServiceMyDay';
 import styles from './MyDay.module.css';
@@ -89,46 +89,38 @@ const MyDay = () => {
   const history = useHistory();
   const { theme } = useTheme();
   const { emphasisColor } = useEmphasisColor();
-  const { setFlashMessage } = useFlashMessage();
   const [selectedDate, setSelectedDate] = useState(() =>
     formatLocalDate(new Date())
   );
-  const [myDay, setMyDay] = useState({ items: [], summary: emptySummary });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const {
+    data: myDay = { items: [], summary: emptySummary },
+    error: requestError,
+    isPending: loading,
+    isFetching,
+    refetch
+  } = useQuery({
+    queryKey: ['my-day', selectedDate],
+    queryFn: async () => {
+      const response = await ServiceMyDay.getByDate(selectedDate);
+      const data = response.data?.data;
+
+      return {
+        items: Array.isArray(data?.items) ? data.items : [],
+        summary: { ...emptySummary, ...data?.summary }
+      };
+    },
+    staleTime: 30 * 1000
+  });
+  const error = requestError
+    ? requestError.response?.data?.message ||
+      'Não foi possível carregar os compromissos deste dia.'
+    : '';
 
   const isToday = selectedDate === formatLocalDate(new Date());
   const completionPercentage = Math.min(
     100,
     Math.max(0, Number(myDay.summary.completionPercentage) || 0)
   );
-
-  const loadMyDay = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await ServiceMyDay.getByDate(selectedDate);
-      const data = response.data?.data;
-
-      setMyDay({
-        items: Array.isArray(data?.items) ? data.items : [],
-        summary: { ...emptySummary, ...data?.summary }
-      });
-    } catch (requestError) {
-      const message =
-        requestError.response?.data?.message ||
-        'Não foi possível carregar os compromissos deste dia.';
-      setError(message);
-      setMyDay({ items: [], summary: emptySummary });
-      setFlashMessage(message, 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedDate, setFlashMessage]);
-
-  useEffect(() => {
-    loadMyDay();
-  }, [loadMyDay]);
 
   const changeDay = (amount) => {
     const date = parseLocalDate(selectedDate);
@@ -258,11 +250,11 @@ const MyDay = () => {
             <p>Seus compromissos em ordem de horário</p>
           </div>
           <button
-            onClick={loadMyDay}
-            disabled={loading}
+            onClick={() => refetch()}
+            disabled={isFetching}
             aria-label="Atualizar agenda"
           >
-            <RefreshCw className={loading ? styles.spinning : ''} />
+            <RefreshCw className={isFetching ? styles.spinning : ''} />
             Atualizar
           </button>
         </div>
@@ -277,7 +269,7 @@ const MyDay = () => {
             <AlertCircle />
             <strong>Não foi possível carregar a agenda</strong>
             <span>{error}</span>
-            <button onClick={loadMyDay}>Tentar novamente</button>
+            <button onClick={() => refetch()}>Tentar novamente</button>
           </div>
         ) : myDay.items.length === 0 ? (
           <div className={styles.feedback}>

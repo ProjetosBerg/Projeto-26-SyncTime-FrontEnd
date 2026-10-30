@@ -1,4 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  lazy,
+  Suspense,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef
+} from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useHistory, useLocation } from 'react-router-dom';
 import {
   AlertCircle,
@@ -8,15 +17,16 @@ import {
   RefreshCw
 } from 'lucide-react';
 import styles from './Calendar.module.css';
-import NoteList from './List/NoteList';
 import { useTheme } from './../../../hooks/useTheme';
 import { useEmphasisColor } from './../../../hooks/useEmphasisColor';
-import CreateRoutine from './Modal/CreateRoutine';
 import useFlashMessage from '../../../hooks/userFlashMessage';
 import ServiceRoutines from './services/ServiceRoutines';
-import CreateModalNote from './Form/CreateModalNote';
 import ServiceNotes from './services/ServiceNotes';
-import SummaryModal from './Modal/SummaryModal';
+
+const NoteList = lazy(() => import('./List/NoteList'));
+const CreateRoutine = lazy(() => import('./Modal/CreateRoutine'));
+const CreateModalNote = lazy(() => import('./Form/CreateModalNote'));
+const SummaryModal = lazy(() => import('./Modal/SummaryModal'));
 
 const getDateKey = (value) => {
   if (!value) return null;
@@ -30,18 +40,71 @@ const getDateKey = (value) => {
   return Number.isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
 };
 
+const formatNoteForList = (note, routineTitle) => ({
+  id: note.id,
+  title: note.activity || 'Atividade sem título',
+  content: note.description || '',
+  time: note.startTime ? note.startTime.slice(0, 5) : '',
+  status: note.status || 'Pendente',
+  routineTitle,
+  priority: note.priority,
+  startTime: note.startTime,
+  endTime: note.endTime,
+  collaborators: note.collaborators,
+  comments: note.comments,
+  summaryDay: note.summaryDay,
+  ...note
+});
+
+const routineOrder = {
+  Manhã: 0,
+  Tarde: 1,
+  Noite: 2,
+  'Resumo do Dia': 3
+};
+
+const sortNotes = (notesArray) =>
+  [...notesArray].sort((a, b) => {
+    const aOrder = routineOrder[a.title] ?? 99;
+    const bOrder = routineOrder[b.title] ?? 99;
+    return aOrder - bOrder;
+  });
+
+const formatDateKey = (dateInput) => {
+  let date;
+
+  if (typeof dateInput === 'string') {
+    const [year, month, day] = dateInput.split('-').map(Number);
+    date = new Date(year, month - 1, day);
+  } else if (dateInput instanceof Date) {
+    date = new Date(dateInput);
+  } else {
+    console.error('Invalid date input for formatDateKey:', dateInput);
+    return new Date().toISOString().split('T')[0];
+  }
+
+  if (isNaN(date.getTime())) {
+    console.error('Invalid Date object created:', dateInput);
+    return new Date().toISOString().split('T')[0];
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
 const Calendar = () => {
   const { theme } = useTheme();
   const { emphasisColor } = useEmphasisColor();
   const { setFlashMessage } = useFlashMessage();
   const history = useHistory();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedRoutine, setSelectedRoutine] = useState(null);
-  const [notes, setNotes] = useState({});
-  const [loadingRoutines, setLoadingRoutines] = useState(true);
-  const [routinesError, setRoutinesError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showNoteList, setShowNoteList] = useState(false);
   const [showCreateNoteModal, setShowCreateNoteModal] = useState(false);
@@ -80,21 +143,87 @@ const Calendar = () => {
   const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
   const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1;
   const years = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
 
-  const sortNotes = (notesArray) => {
-    const order = {
-      Manhã: 0,
-      Tarde: 1,
-      Noite: 2,
-      'Resumo do Dia': 3
-    };
-    return [...notesArray].sort((a, b) => {
-      const aOrder = order[a.title] ?? 99;
-      const bOrder = order[b.title] ?? 99;
-      return aOrder - bOrder;
-    });
-  };
+  const {
+    data: notes = {},
+    error: routinesRequestError,
+    isPending: loadingRoutines,
+    refetch: refetchRoutines
+  } = useQuery({
+    queryKey: ['routines', currentYear, currentMonth],
+    queryFn: async () => {
+      const response = await ServiceRoutines.getByAllRoutines(
+        currentYear,
+        currentMonth
+      );
+      if (response.data.status !== 'OK') {
+        throw new Error('Resposta inválida ao carregar rotinas');
+      }
+
+      const routinesData = response.data.data || [];
+      const grouped = {};
+      routinesData.forEach((routine) => {
+        const routineDate = getDateKey(routine.created_at);
+        const title =
+          routine.type === 'periodo'
+            ? routine.period
+            : routine.type === 'resumo'
+              ? 'Resumo do Dia'
+              : routine.type;
+        const notesByDate = (routine.notes || []).reduce((dates, note) => {
+          const noteDate = getDateKey(note.dateOfNote) || routineDate;
+          if (!noteDate) return dates;
+
+          if (!dates[noteDate]) dates[noteDate] = [];
+          dates[noteDate].push(note);
+          return dates;
+        }, {});
+        const routineDates = Object.keys(notesByDate);
+
+        if (routineDates.length === 0 && routineDate) {
+          routineDates.push(routineDate);
+          notesByDate[routineDate] = [];
+        }
+
+        routineDates.forEach((dateKey) => {
+          const processedRoutine = {
+            id: routine.id,
+            title,
+            content: '',
+            time: new Date(routine.created_at).toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit'
+            }),
+            notes: notesByDate[dateKey]
+          };
+
+          if (!grouped[dateKey]) grouped[dateKey] = [];
+          grouped[dateKey].push(processedRoutine);
+        });
+      });
+      Object.keys(grouped).forEach((dateKey) => {
+        grouped[dateKey] = sortNotes(grouped[dateKey]);
+      });
+      return grouped;
+    },
+    staleTime: 60 * 1000
+  });
+
+  const routinesError = routinesRequestError
+    ? routinesRequestError.response?.data?.message ||
+      routinesRequestError.message ||
+      'Erro ao carregar rotinas'
+    : '';
+
+  const loadRoutines = useCallback(
+    () =>
+      queryClient.invalidateQueries({
+        queryKey: ['routines', currentYear, currentMonth]
+      }),
+    [currentMonth, currentYear, queryClient]
+  );
 
   const getFallbackHolidays = (year) => {
     if (year !== 2025) return {};
@@ -116,7 +245,7 @@ const Calendar = () => {
   };
 
   useEffect(() => {
-    const year = currentDate.getFullYear();
+    const year = currentYear;
     if (holidays[year]) return;
 
     const fetchHolidays = async () => {
@@ -152,7 +281,7 @@ const Calendar = () => {
     };
 
     fetchHolidays();
-  }, [currentDate.getFullYear(), API_KEY]);
+  }, [API_KEY, currentYear, holidays]);
 
   useEffect(() => {
     let searchString = location.state?.search;
@@ -189,7 +318,13 @@ const Calendar = () => {
         }
       }
     }
-  }, [location.search, location.state]);
+  }, [
+    history,
+    location.pathname,
+    location.search,
+    location.state,
+    setFlashMessage
+  ]);
 
   useEffect(() => {
     if (
@@ -226,81 +361,7 @@ const Calendar = () => {
         setOpenNoteListFromNotification(false);
       }
     }
-  }, [notes, openNoteListFromNotification, targetRoutineId]);
-
-  const loadRoutines = useCallback(async () => {
-    try {
-      setLoadingRoutines(true);
-      setRoutinesError('');
-      setNotes({});
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      const response = await ServiceRoutines.getByAllRoutines(year, month);
-      if (response.data.status === 'OK') {
-        const routinesData = response.data.data || [];
-        const grouped = {};
-        routinesData.forEach((routine) => {
-          const routineDate = getDateKey(routine.created_at);
-          const title =
-            routine.type === 'periodo'
-              ? routine.period
-              : routine.type === 'resumo'
-                ? 'Resumo do Dia'
-                : routine.type;
-          const notesByDate = (routine.notes || []).reduce((dates, note) => {
-            const noteDate = getDateKey(note.dateOfNote) || routineDate;
-            if (!noteDate) return dates;
-
-            if (!dates[noteDate]) dates[noteDate] = [];
-            dates[noteDate].push(note);
-            return dates;
-          }, {});
-          const routineDates = Object.keys(notesByDate);
-
-          if (routineDates.length === 0 && routineDate) {
-            routineDates.push(routineDate);
-            notesByDate[routineDate] = [];
-          }
-
-          routineDates.forEach((dateKey) => {
-            const processedRoutine = {
-              id: routine.id,
-              title,
-              content: '',
-              time: new Date(routine.created_at).toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit'
-              }),
-              notes: notesByDate[dateKey]
-            };
-
-            if (!grouped[dateKey]) grouped[dateKey] = [];
-            grouped[dateKey].push(processedRoutine);
-          });
-        });
-        Object.keys(grouped).forEach((dateKey) => {
-          grouped[dateKey] = sortNotes(grouped[dateKey]);
-        });
-        setNotes(grouped);
-      } else {
-        throw new Error('Resposta inválida ao carregar rotinas');
-      }
-    } catch (error) {
-      console.error('Erro ao buscar rotinas:', error);
-      const message =
-        error.response?.data?.message ||
-        error.message ||
-        'Erro ao carregar rotinas';
-      setRoutinesError(message);
-      setFlashMessage(message, 'error');
-    } finally {
-      setLoadingRoutines(false);
-    }
-  }, [currentDate, setFlashMessage]);
-
-  useEffect(() => {
-    loadRoutines();
-  }, [loadRoutines]);
+  }, [notes, openNoteListFromNotification, setFlashMessage, targetRoutineId]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -324,31 +385,34 @@ const Calendar = () => {
     };
   }, []);
 
-  const handleGenerateSummary = useCallback(async (routineId, date) => {
-    try {
-      const data = { routine_id: routineId, date: formatDateKey(date) };
-      const response = await ServiceNotes.generateSummary(data);
-      if (response.data.status === 'OK') {
-        const summaryText = response.data.data || '';
-        setSummaryContent(summaryText);
-        setShowSummaryModal(true);
-        loadRoutines();
-        setFlashMessage('Resumo gerado com sucesso', 'success');
+  const handleGenerateSummary = useCallback(
+    async (routineId, date) => {
+      try {
+        const data = { routine_id: routineId, date: formatDateKey(date) };
+        const response = await ServiceNotes.generateSummary(data);
+        if (response.data.status === 'OK') {
+          const summaryText = response.data.data || '';
+          setSummaryContent(summaryText);
+          setShowSummaryModal(true);
+          loadRoutines();
+          setFlashMessage('Resumo gerado com sucesso', 'success');
+        }
+      } catch (error) {
+        console.error('Erro ao gerar resumo:', error);
+        const errorMsg =
+          error.response?.data?.errors?.[0] || 'Erro ao gerar resumo';
+        setFlashMessage(errorMsg, 'error');
       }
-    } catch (error) {
-      console.error('Erro ao gerar resumo:', error);
-      const errorMsg =
-        error.response?.data?.errors?.[0] || 'Erro ao gerar resumo';
-      setFlashMessage(errorMsg, 'error');
-    }
-  }, []);
+    },
+    [loadRoutines, setFlashMessage]
+  );
 
   const handleViewSummary = useCallback((content) => {
     setSummaryContent(content);
     setShowSummaryModal(true);
   }, []);
 
-  const getDaysInMonth = (date) => {
+  const getDaysInMonth = useCallback((date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
@@ -367,7 +431,7 @@ const Calendar = () => {
     }
 
     return days;
-  };
+  }, []);
 
   const previousMonth = () => {
     setCurrentDate(
@@ -395,31 +459,6 @@ const Calendar = () => {
 
   const goToToday = () => {
     setCurrentDate(new Date());
-  };
-
-  const formatDateKey = (dateInput) => {
-    let date;
-
-    if (typeof dateInput === 'string') {
-      const [year, month, day] = dateInput.split('-').map(Number);
-      date = new Date(year, month - 1, day);
-    } else if (dateInput instanceof Date) {
-      date = new Date(dateInput);
-    } else {
-      console.error('Invalid date input for formatDateKey:', dateInput);
-      return new Date().toISOString().split('T')[0];
-    }
-
-    if (isNaN(date.getTime())) {
-      console.error('Invalid Date object created:', dateInput);
-      return new Date().toISOString().split('T')[0];
-    }
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
   };
 
   const handleDateClick = (day) => {
@@ -525,53 +564,45 @@ const Calendar = () => {
     return yearHolidays[dateKey] || null;
   };
 
-  const days = getDaysInMonth(currentDate);
-  const selectedDateRoutines = selectedDate
-    ? notes[formatDateKey(selectedDate)] || []
-    : [];
+  const days = useMemo(
+    () => getDaysInMonth(currentDate),
+    [currentDate, getDaysInMonth]
+  );
+  const selectedDateRoutines = useMemo(
+    () => (selectedDate ? notes[formatDateKey(selectedDate)] || [] : []),
+    [notes, selectedDate]
+  );
   const selectedDateNotesForCreate = selectedDateRoutines;
-  const selectedDateNotesForList = selectedDate
-    ? selectedDateRoutines.flatMap((routine) =>
-        routine.notes.map((note) => ({
-          id: note.id,
-          title: note.activity || 'Atividade sem título',
-          content: note.description || '',
-          time: note.startTime ? note.startTime.slice(0, 5) : '',
-          status: note.status || 'Pendente',
-          routineTitle: routine.title,
-          priority: note.priority,
-          startTime: note.startTime,
-          endTime: note.endTime,
-          collaborators: note.collaborators,
-          comments: note.comments,
-          summaryDay: note.summaryDay,
-          ...note
-        }))
-      )
-    : [];
-  const currentSelectedRoutine =
-    selectedDate && selectedRoutine
-      ? selectedDateRoutines.find((r) => r.id === selectedRoutine.id) ||
-        selectedRoutine
-      : selectedRoutine;
-  const listNotes = currentSelectedRoutine
-    ? currentSelectedRoutine.notes.map((note) => ({
-        id: note.id,
-        title: note.activity || 'Atividade sem título',
-        content: note.description || '',
-        time: note.startTime ? note.startTime.slice(0, 5) : '',
-        status: note.status || 'Pendente',
-        routineTitle: currentSelectedRoutine.title,
-        priority: note.priority,
-        startTime: note.startTime,
-        endTime: note.endTime,
-        collaborators: note.collaborators,
-        comments: note.comments,
-        summaryDay: note.summaryDay,
-        ...note
-      }))
-    : selectedDateNotesForList;
-  const formattedSelectedDate = selectedDate ? formatDateKey(selectedDate) : '';
+  const selectedDateNotesForList = useMemo(
+    () =>
+      selectedDate
+        ? selectedDateRoutines.flatMap((routine) =>
+            routine.notes.map((note) => formatNoteForList(note, routine.title))
+          )
+        : [],
+    [selectedDate, selectedDateRoutines]
+  );
+  const currentSelectedRoutine = useMemo(
+    () =>
+      selectedDate && selectedRoutine
+        ? selectedDateRoutines.find((r) => r.id === selectedRoutine.id) ||
+          selectedRoutine
+        : selectedRoutine,
+    [selectedDate, selectedDateRoutines, selectedRoutine]
+  );
+  const listNotes = useMemo(
+    () =>
+      currentSelectedRoutine
+        ? currentSelectedRoutine.notes.map((note) =>
+            formatNoteForList(note, currentSelectedRoutine.title)
+          )
+        : selectedDateNotesForList,
+    [currentSelectedRoutine, selectedDateNotesForList]
+  );
+  const formattedSelectedDate = useMemo(
+    () => (selectedDate ? formatDateKey(selectedDate) : ''),
+    [selectedDate]
+  );
   const refreshNotesForDate = loadRoutines;
 
   const closeNoteList = () => {
@@ -724,7 +755,7 @@ const Calendar = () => {
                 : 'Carregando atividades do mês...'}
             </span>
             {routinesError && (
-              <button type="button" onClick={loadRoutines}>
+              <button type="button" onClick={() => refetchRoutines()}>
                 <RefreshCw aria-hidden="true" /> Tentar novamente
               </button>
             )}
@@ -849,48 +880,65 @@ const Calendar = () => {
         </div>
       </div>
 
-      <CreateRoutine
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        selectedDate={selectedDate}
-        noteType={noteType}
-        onNoteTypeChange={setNoteType}
-        selectedPeriods={selectedPeriods}
-        onSelectedPeriodsChange={setSelectedPeriods}
-        formattedDate={formattedSelectedDate}
-        selectedDateNotes={selectedDateNotesForCreate}
-        onRefresh={refreshNotesForDate}
-        onOpenNoteList={handleOpenRoutineInModal}
-      />
+      <Suspense
+        fallback={
+          <div className={styles.modalChunkFallback} role="status">
+            <LoaderCircle aria-hidden="true" />
+            Carregando recurso...
+          </div>
+        }
+      >
+        {showModal && (
+          <CreateRoutine
+            isOpen
+            onClose={() => setShowModal(false)}
+            selectedDate={selectedDate}
+            noteType={noteType}
+            onNoteTypeChange={setNoteType}
+            selectedPeriods={selectedPeriods}
+            onSelectedPeriodsChange={setSelectedPeriods}
+            formattedDate={formattedSelectedDate}
+            selectedDateNotes={selectedDateNotesForCreate}
+            onRefresh={refreshNotesForDate}
+            onOpenNoteList={handleOpenRoutineInModal}
+          />
+        )}
 
-      <NoteList
-        isOpen={showNoteList}
-        onClose={closeNoteList}
-        selectedDate={selectedDate}
-        notes={listNotes}
-        selectedRoutine={currentSelectedRoutine}
-        onDeleteNote={deleteNote}
-        onOpenCreateNote={handleOpenCreateNote}
-        onEditNote={handleEditNote}
-        onGenerateSummary={handleGenerateSummary}
-        onViewSummary={handleViewSummary}
-        targetNoteId={targetNoteId}
-      />
+        {showNoteList && (
+          <NoteList
+            isOpen
+            onClose={closeNoteList}
+            selectedDate={selectedDate}
+            notes={listNotes}
+            selectedRoutine={currentSelectedRoutine}
+            onDeleteNote={deleteNote}
+            onOpenCreateNote={handleOpenCreateNote}
+            onEditNote={handleEditNote}
+            onGenerateSummary={handleGenerateSummary}
+            onViewSummary={handleViewSummary}
+            targetNoteId={targetNoteId}
+          />
+        )}
 
-      <CreateModalNote
-        isOpen={showCreateNoteModal}
-        onClose={() => setShowCreateNoteModal(false)}
-        selectedRoutine={currentSelectedRoutine}
-        noteToEdit={noteToEdit}
-        onRefresh={loadRoutines}
-        dateOfNote={selectedDate}
-      />
+        {showCreateNoteModal && (
+          <CreateModalNote
+            isOpen
+            onClose={() => setShowCreateNoteModal(false)}
+            selectedRoutine={currentSelectedRoutine}
+            noteToEdit={noteToEdit}
+            onRefresh={loadRoutines}
+            dateOfNote={selectedDate}
+          />
+        )}
 
-      <SummaryModal
-        isOpen={showSummaryModal}
-        onClose={() => setShowSummaryModal(false)}
-        content={summaryContent}
-      />
+        {showSummaryModal && (
+          <SummaryModal
+            isOpen
+            onClose={() => setShowSummaryModal(false)}
+            content={summaryContent}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };

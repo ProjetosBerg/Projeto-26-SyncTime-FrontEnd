@@ -1,5 +1,5 @@
 // ⚙️ React e bibliotecas externas
-import { useState, useEffect } from 'react';
+import { memo, useCallback, useState, useEffect } from 'react';
 import { Bell, Zap, User } from 'lucide-react';
 
 // 💅 Estilos
@@ -16,7 +16,7 @@ import {
   useMemorizeFilters,
   POSSIBLE_FILTERS_ENTITIES
 } from '../../hooks/useMemorizeInputsFilters';
-import { useSocket } from '../../hooks/useSocket'; 
+import { useSocket } from '../../hooks/useSocket';
 import ServiceUsers from '../../services/ServiceUsers';
 import ServiceNotification from '../notification/services/ServiceNotification';
 
@@ -27,8 +27,8 @@ const Header = () => {
   );
 
   const userId = getMemorizedFilters().id;
-  const { on: socketOn, off: socketOff } = useSocket(userId); 
-  const [notificationCount, setNotificationCount] = useState(0); 
+  const { on: socketOn, off: socketOff } = useSocket(userId);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [streakDays, setStreakDays] = useState(0);
   const [weekProgress, setWeekProgress] = useState([
     false,
@@ -49,19 +49,19 @@ const Header = () => {
 
   const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
-  const fetchNotificationCount = async () => {
+  const fetchNotificationCount = useCallback(async () => {
     try {
       const response = await ServiceNotification.getCountNotification();
       if (response.data.status === 'OK') {
-        setNotificationCount(response.data.data || 0); 
+        setNotificationCount(response.data.data || 0);
       }
     } catch (error) {
       console.error('Erro ao buscar count de notificações:', error);
       setNotificationCount(0);
     }
-  };
+  }, []);
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     const currentUser = getMemorizedFilters();
     if (currentUser?.id) {
       try {
@@ -79,9 +79,9 @@ const Header = () => {
         console.error('Erro ao buscar dados do usuário:', error);
       }
     }
-  };
+  }, [getMemorizedFilters, memorizeFilters]);
 
-  const fetchStreakData = async () => {
+  const fetchStreakData = useCallback(async () => {
     try {
       setStreakLoading(true);
       setStreakError(null);
@@ -107,15 +107,15 @@ const Header = () => {
     } finally {
       setStreakLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchUserData();
     fetchStreakData();
     if (userId) {
-      fetchNotificationCount(); 
+      fetchNotificationCount();
     }
-  }, [userId]); 
+  }, [fetchNotificationCount, fetchStreakData, fetchUserData, userId]);
 
   useEffect(() => {
     const handleProfileUpdate = () => {
@@ -127,13 +127,15 @@ const Header = () => {
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
     };
-  }, []);
+  }, [fetchUserData]);
 
   useEffect(() => {
     if (!userId) return;
 
     const handleNewNotification = (data) => {
-      setNotificationCount(data.countNewNotification || notificationCount + 1); 
+      setNotificationCount(
+        (currentCount) => data.countNewNotification ?? currentCount + 1
+      );
     };
 
     socketOn('newNotification', handleNewNotification);
@@ -141,7 +143,7 @@ const Header = () => {
     return () => {
       socketOff('newNotification', handleNewNotification);
     };
-  }, [userId, socketOn, socketOff, notificationCount]); 
+  }, [userId, socketOn, socketOff]);
 
   const getFlameColor = () => {
     if (streakDays >= 30) return '#ff0000';
@@ -156,12 +158,12 @@ const Header = () => {
   };
 
   const handleNotificationChange = (delta) => {
-    setNotificationCount((prev) => Math.max(0, prev + delta)); 
+    setNotificationCount((prev) => Math.max(0, prev + delta));
   };
 
   const handleCloseNotifications = () => {
     setShowNotifications(false);
-    fetchNotificationCount(); 
+    fetchNotificationCount();
   };
 
   return (
@@ -271,9 +273,9 @@ const Header = () => {
                 {/* Notifications Dropdown */}
                 {showNotifications && (
                   <NotificationsDropdown
-                    onClose={handleCloseNotifications} 
-                    initialUnreadCount={notificationCount} 
-                    onNotificationChange={handleNotificationChange} 
+                    onClose={handleCloseNotifications}
+                    initialUnreadCount={notificationCount}
+                    onNotificationChange={handleNotificationChange}
                   />
                 )}
               </div>
@@ -321,4 +323,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default memo(Header);

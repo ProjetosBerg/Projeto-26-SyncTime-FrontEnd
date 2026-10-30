@@ -1,10 +1,11 @@
 // ⚙️ React e bibliotecas externas
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 // 🔐 Serviços / API
 import api from '../services/api';
 import ServiceAUTH from '../services/ServiceAUTH';
+import queryClient from '../services/queryClient';
 
 // 🧠 Hooks customizados
 import useFlashMessage from './userFlashMessage';
@@ -45,26 +46,35 @@ export default function useAuth() {
   const hasValidated = useRef(false);
   const handlingUnauthorized = useRef(false);
 
-  function clearLocalSession(silent = false, deleteAccount = false) {
-    setAuthenticated(false);
-    setLoading(false);
-    clearMemorizedFiltersUsers();
-    clearAllMemorizedConfigs();
-    localStorage.removeItem('token');
-    api.defaults.headers.Authorization = undefined;
+  const clearLocalSession = useCallback(
+    (silent = false, deleteAccount = false) => {
+      setAuthenticated(false);
+      setLoading(false);
+      clearMemorizedFiltersUsers();
+      clearAllMemorizedConfigs();
+      queryClient.clear();
+      localStorage.removeItem('token');
+      api.defaults.headers.Authorization = undefined;
 
-    if (!silent && !deleteAccount) {
-      setFlashMessage('Logout realizado com sucesso!', 'success');
-    } else if (silent && !deleteAccount) {
-      setFlashMessage('Sua sessão expirou. Faça login novamente.', 'warning');
-    } else {
-      setFlashMessage('Conta excluída com sucesso!', 'success');
-    }
+      if (!silent && !deleteAccount) {
+        setFlashMessage('Logout realizado com sucesso!', 'success');
+      } else if (silent && !deleteAccount) {
+        setFlashMessage('Sua sessão expirou. Faça login novamente.', 'warning');
+      } else {
+        setFlashMessage('Conta excluída com sucesso!', 'success');
+      }
 
-    history.push('/login');
-  }
+      history.push('/login');
+    },
+    [
+      clearAllMemorizedConfigs,
+      clearMemorizedFiltersUsers,
+      history,
+      setFlashMessage
+    ]
+  );
 
-  async function validateToken() {
+  const validateToken = useCallback(async () => {
     const token = localStorage.getItem('token');
 
     if (!token) {
@@ -89,14 +99,14 @@ export default function useAuth() {
       }
       return false;
     }
-  }
+  }, [clearLocalSession, getMemorizedFiltersUsers]);
 
   useEffect(() => {
     if (!hasValidated.current) {
       hasValidated.current = true;
       validateToken();
     }
-  }, []);
+  }, [validateToken]);
 
   useEffect(() => {
     const interceptor = api.interceptors.response.use(
@@ -175,7 +185,7 @@ export default function useAuth() {
     return () => {
       api.interceptors.response.eject(interceptor);
     };
-  }, []);
+  }, [clearLocalSession]);
 
   async function register(user) {
     let msgText = '';
@@ -267,6 +277,7 @@ export default function useAuth() {
     setAuthenticated(false);
     clearMemorizedFiltersUsers();
     clearAllMemorizedConfigs();
+    queryClient.clear();
     localStorage.removeItem('token');
     api.defaults.headers.Authorization = undefined;
 
