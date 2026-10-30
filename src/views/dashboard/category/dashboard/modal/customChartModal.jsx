@@ -1,4 +1,12 @@
-import { X, BarChart as BarChartIcon, LineChart as LineChartIcon, AreaChart as AreaChartIcon, PieChart as PieChartIcon, ScatterChart as ScatterChartIcon, Radar as RadarIcon } from 'lucide-react';
+import {
+  X,
+  BarChart as BarChartIcon,
+  LineChart as LineChartIcon,
+  AreaChart as AreaChartIcon,
+  PieChart as PieChartIcon,
+  ScatterChart as ScatterChartIcon,
+  Radar as RadarIcon
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import styles from './customChartModal.module.css';
 import { useTheme } from './../../../../../hooks/useTheme';
@@ -8,9 +16,9 @@ const CustomChartModal = ({
   onClose,
   onSubmit,
   currentSection,
-  getDataOptions,
+  getDataOptions
 }) => {
-  const { theme } = useTheme(); 
+  const { theme } = useTheme();
   const [chartConfig, setChartConfig] = useState({
     title: '',
     chartType: 'BarChart',
@@ -33,7 +41,7 @@ const CustomChartModal = ({
       additionalMetrics: [],
       customFieldLabel: null
     });
-  }, [currentSection]);
+  }, [currentSection, getDataOptions]);
 
   if (!show) return null;
 
@@ -54,7 +62,12 @@ const CustomChartModal = ({
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (!chartConfig.dataSource || !chartConfig.xAxis || !chartConfig.yAxis || !chartConfig.title) {
+    if (
+      !chartConfig.dataSource ||
+      !chartConfig.xAxis ||
+      !chartConfig.yAxis ||
+      !chartConfig.title
+    ) {
       alert('Preencha todos os campos obrigatórios.');
       return;
     }
@@ -62,12 +75,12 @@ const CustomChartModal = ({
   };
 
   const handleDataSourceChange = (e) => {
-    setChartConfig({ 
-      ...chartConfig, 
-      dataSource: e.target.value, 
-      xAxis: '', 
-      yAxis: '', 
-      additionalMetrics: [] 
+    setChartConfig({
+      ...chartConfig,
+      dataSource: e.target.value,
+      xAxis: '',
+      yAxis: '',
+      additionalMetrics: []
     });
   };
 
@@ -77,41 +90,73 @@ const CustomChartModal = ({
         <div className={`${styles.modalInner} ${styles[theme]}`}>
           <div className={`${styles.modalHeader} ${styles[theme]}`}>
             <h3 className={`${styles.modalTitle} ${styles[theme]}`}>
-              Criar Gráfico Customizado para {currentSection === 'categories' ? 'Insights de Categorias' : currentSection === 'customFields' ? 'Insights de Campos Customizados' : currentSection === 'transactions' ? 'Insights de Transações' : currentSection === 'evolution' ? 'Evolução e Relações' : 'Progresso de Metas'}
+              Criar Gráfico Customizado para{' '}
+              {currentSection === 'categories'
+                ? 'Insights de Categorias'
+                : currentSection === 'customFields'
+                  ? 'Insights de Campos Customizados'
+                  : currentSection === 'transactions'
+                    ? 'Insights de Transações'
+                    : currentSection === 'evolution'
+                      ? 'Evolução e Relações'
+                      : 'Progresso de Metas'}
             </h3>
-            <button onClick={onClose} className={`${styles.closeButton} ${styles[theme]}`}>
+            <button
+              onClick={onClose}
+              className={`${styles.closeButton} ${styles[theme]}`}
+            >
               <X size={24} />
             </button>
           </div>
-          <form onSubmit={handleFormSubmit} className={`${styles.modalForm} ${styles[theme]}`}>
+          <form
+            onSubmit={handleFormSubmit}
+            className={`${styles.modalForm} ${styles[theme]}`}
+          >
             <div className={styles.formGroup}>
-              <label className={`${styles.formLabel} ${styles[theme]}`}>Título do Gráfico</label>
+              <label className={`${styles.formLabel} ${styles[theme]}`}>
+                Título do Gráfico
+              </label>
               <input
                 type="text"
                 value={chartConfig.title}
-                onChange={(e) => setChartConfig({ ...chartConfig, title: e.target.value })}
+                onChange={(e) =>
+                  setChartConfig({ ...chartConfig, title: e.target.value })
+                }
                 className={`${styles.input} ${styles[theme]}`}
                 placeholder="Ex: Análise de Vendas Mensais"
               />
             </div>
             <div className={styles.formGroup}>
-              <label className={`${styles.formLabel} ${styles[theme]}`}>Tipo de Gráfico</label>
+              <label className={`${styles.formLabel} ${styles[theme]}`}>
+                Tipo de Gráfico
+              </label>
               <div className={styles.chartTypeGrid}>
-                {chartTypeOptions.map(option => (
+                {chartTypeOptions.map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => setChartConfig({ ...chartConfig, chartType: option.value })}
+                    onClick={() =>
+                      setChartConfig({
+                        ...chartConfig,
+                        chartType: option.value
+                      })
+                    }
                     className={`${styles.chartTypeButton} ${styles[theme]} ${chartConfig.chartType === option.value ? styles.chartTypeSelected : ''}`}
                     type="button"
                   >
                     <option.icon size={24} />
-                    <span className={`${styles.chartTypeLabel} ${styles[theme]}`}>{option.label}</span>
+                    <span
+                      className={`${styles.chartTypeLabel} ${styles[theme]}`}
+                    >
+                      {option.label}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
             <div className={styles.formGroup}>
-              <label className={`${styles.formLabel} ${styles[theme]}`}>Fonte de Dados</label>
+              <label className={`${styles.formLabel} ${styles[theme]}`}>
+                Fonte de Dados
+              </label>
               <select
                 value={chartConfig.dataSource}
                 onChange={handleDataSourceChange}
@@ -127,28 +172,40 @@ const CustomChartModal = ({
             </div>
             <div className={styles.axisGrid}>
               <div className={styles.formGroup}>
-                <label className={`${styles.formLabel} ${styles[theme]}`}>Eixo X</label>
+                <label className={`${styles.formLabel} ${styles[theme]}`}>
+                  Eixo X
+                </label>
                 <select
                   value={chartConfig.xAxis}
-                  onChange={(e) => setChartConfig({ ...chartConfig, xAxis: e.target.value })}
+                  onChange={(e) =>
+                    setChartConfig({ ...chartConfig, xAxis: e.target.value })
+                  }
                   className={`${styles.select} ${styles[theme]}`}
                 >
                   <option value="">Selecione...</option>
-                  {currentFields().map(field => (
-                    <option key={field} value={field}>{field}</option>
+                  {currentFields().map((field) => (
+                    <option key={field} value={field}>
+                      {field}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className={styles.formGroup}>
-                <label className={`${styles.formLabel} ${styles[theme]}`}>Eixo Y Principal</label>
+                <label className={`${styles.formLabel} ${styles[theme]}`}>
+                  Eixo Y Principal
+                </label>
                 <select
                   value={chartConfig.yAxis}
-                  onChange={(e) => setChartConfig({ ...chartConfig, yAxis: e.target.value })}
+                  onChange={(e) =>
+                    setChartConfig({ ...chartConfig, yAxis: e.target.value })
+                  }
                   className={`${styles.select} ${styles[theme]}`}
                 >
                   <option value="">Selecione...</option>
-                  {currentFields().map(field => (
-                    <option key={field} value={field}>{field}</option>
+                  {currentFields().map((field) => (
+                    <option key={field} value={field}>
+                      {field}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -163,7 +220,12 @@ const CustomChartModal = ({
               </button>
               <button
                 type="submit"
-                disabled={!chartConfig.title || !chartConfig.dataSource || !chartConfig.xAxis || !chartConfig.yAxis}
+                disabled={
+                  !chartConfig.title ||
+                  !chartConfig.dataSource ||
+                  !chartConfig.xAxis ||
+                  !chartConfig.yAxis
+                }
                 className={`${styles.submitButton} ${styles[theme]}`}
               >
                 Criar Gráfico

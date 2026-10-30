@@ -17,7 +17,8 @@ export default defineConfig({
             'react-select',
             'yup'
           ],
-          'charts-vendor': ['recharts', 'html-to-image', 'jspdf']
+          'charts-vendor': ['chart.js', 'react-chartjs-2'],
+          'export-vendor': ['html-to-image', 'jspdf']
         }
       }
     }

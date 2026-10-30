@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ErrorMessage } from '@hookform/error-message';
@@ -119,7 +119,7 @@ const CreateModalNote = ({
     handleSubmit,
     reset,
     watch,
-    formState: { errors }
+    formState: { errors, isDirty }
   } = useForm({
     resolver: yupResolver(createNotesValidationSchema),
     defaultValues: {
@@ -146,8 +146,34 @@ const CreateModalNote = ({
 
   const hasRecurrence = watch('hasRecurrence');
   const recurrenceFrequency = watch('recurrenceFrequency');
+  const hasUnsavedChanges =
+    isDirty ||
+    Boolean(newComment.trim()) ||
+    (!noteToEdit && comments.length > 0);
 
-  const fetchCategories = async () => {
+  const closeModal = useCallback(() => {
+    if (onClose) onClose();
+    setShowComments(false);
+    setLoading(false);
+    setFormInitialized(false);
+  }, [onClose]);
+
+  const requestClose = useCallback(() => {
+    if (loading) return;
+
+    if (
+      hasUnsavedChanges &&
+      !window.confirm(
+        'Existem alterações não salvas. Deseja realmente fechar e perder essas informações?'
+      )
+    ) {
+      return;
+    }
+
+    closeModal();
+  }, [closeModal, hasUnsavedChanges, loading]);
+
+  const fetchCategories = useCallback(async () => {
     if (categories.length > 0) return;
     try {
       setLoadingCategories(true);
@@ -163,30 +189,36 @@ const CreateModalNote = ({
     } finally {
       setLoadingCategories(false);
     }
-  };
+  }, [categories.length, setFlashMessage]);
 
-  const fetchSpecificCategory = async (categoryId) => {
-    try {
-      setLoadingCategories(true);
-      const response = await ServiceCategory.getByIdCategory(categoryId);
-      if (response.data.status === 'OK') {
-        const categoryData = response.data.data;
-        if (!categories.find((cat) => cat.id === categoryData.id)) {
-          setCategories((prev) => [...prev, categoryData]);
-        }
+  const fetchSpecificCategory = useCallback(
+    async (categoryId) => {
+      if (categories.some((category) => category.id === categoryId))
         return true;
-      } else {
+
+      try {
+        setLoadingCategories(true);
+        const response = await ServiceCategory.getByIdCategory(categoryId);
+        if (response.data.status === 'OK') {
+          const categoryData = response.data.data;
+          if (!categories.find((cat) => cat.id === categoryData.id)) {
+            setCategories((prev) => [...prev, categoryData]);
+          }
+          return true;
+        } else {
+          setFlashMessage('Erro ao carregar categoria específica', 'error');
+          return false;
+        }
+      } catch (error) {
+        console.error('Erro ao buscar categoria específica:', error);
         setFlashMessage('Erro ao carregar categoria específica', 'error');
         return false;
+      } finally {
+        setLoadingCategories(false);
       }
-    } catch (error) {
-      console.error('Erro ao buscar categoria específica:', error);
-      setFlashMessage('Erro ao carregar categoria específica', 'error');
-      return false;
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
+    },
+    [categories, setFlashMessage]
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -231,7 +263,7 @@ const CreateModalNote = ({
       isActive = false;
       document.body.style.overflow = 'auto';
     };
-  }, [isOpen, noteToEdit?.category_id]);
+  }, [fetchCategories, fetchSpecificCategory, isOpen, noteToEdit]);
 
   useEffect(() => {
     if (!isOpen || !formInitialized) return undefined;
@@ -296,23 +328,29 @@ const CreateModalNote = ({
     if (!isOpen) return undefined;
 
     const handleEscape = (event) => {
-      if (event.key === 'Escape' && !loading && onClose) onClose();
+      if (event.key === 'Escape') requestClose();
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, loading, onClose]);
+  }, [isOpen, requestClose]);
 
-  const closeModal = () => {
-    if (onClose) onClose();
-    setShowComments(false);
-    setLoading(false);
-    setFormInitialized(false);
-  };
+  useEffect(() => {
+    if (!isOpen || !hasUnsavedChanges) return undefined;
+
+    const preventAccidentalExit = (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', preventAccidentalExit);
+    return () =>
+      window.removeEventListener('beforeunload', preventAccidentalExit);
+  }, [hasUnsavedChanges, isOpen]);
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget && !loading) {
-      closeModal();
+      requestClose();
     }
   };
 
@@ -577,7 +615,8 @@ const CreateModalNote = ({
           )}
           <button
             className={`${styles.closeBtn} ${styles[theme]}`}
-            onClick={closeModal}
+            onClick={requestClose}
+            type="button"
           >
             &times;
           </button>

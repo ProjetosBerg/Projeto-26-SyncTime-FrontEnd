@@ -1,6 +1,14 @@
 // ⚙️ React e bibliotecas externas
-import { useState, useEffect } from 'react';
-import { Filter, Trash2, ExternalLink, X, Check, Bell } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  ExternalLink,
+  Filter,
+  Trash2,
+  X
+} from 'lucide-react';
 import { useHistory } from 'react-router-dom';
 
 // 💅 Estilos
@@ -9,16 +17,35 @@ import styles from './NotificationsDropdown.module.css';
 // 🧠 Hooks customizados
 import { useTheme } from '../../hooks/useTheme';
 import { useEmphasisColor } from '../../hooks/useEmphasisColor';
-import { useSocket } from '../../hooks/useSocket'; 
+import { useSocket } from '../../hooks/useSocket';
 
 // 📡 Services
 import ServiceNotification from './services/ServiceNotification';
 import useFlashMessage from '../../hooks/userFlashMessage';
 import ServiceRoutines from '../../views/notes/Calendar/services/ServiceRoutines';
 import ServiceNotes from '../../views/notes/Calendar/services/ServiceNotes';
-import { POSSIBLE_FILTERS_ENTITIES, useMemorizeFilters } from '../../hooks/useMemorizeInputsFilters';
+import {
+  POSSIBLE_FILTERS_ENTITIES,
+  useMemorizeFilters
+} from '../../hooks/useMemorizeInputsFilters';
 
-const NotificationsDropdown = ({ onClose }) => {
+const formatRelativeTime = (dateStr) => {
+  const date = new Date(dateStr);
+  const diff = Date.now() - date.getTime();
+
+  if (!Number.isFinite(diff) || diff < 60000) return 'Agora';
+
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 60) return `${minutes} min atrás`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hora${hours > 1 ? 's' : ''} atrás`;
+
+  const days = Math.floor(hours / 24);
+  return `${days} dia${days > 1 ? 's' : ''} atrás`;
+};
+
+const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
   const { theme } = useTheme();
   const { emphasisColor } = useEmphasisColor();
   const [filter, setFilter] = useState('todas');
@@ -26,84 +53,59 @@ const NotificationsDropdown = ({ onClose }) => {
   const [typeFilter, setTypeFilter] = useState('todos');
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [markingAll, setMarkingAll] = useState(false);
   const history = useHistory();
   const { setFlashMessage } = useFlashMessage();
-  const {
-      getMemorizedFilters: getMemorizedFiltersUsers,
-    } = useMemorizeFilters(POSSIBLE_FILTERS_ENTITIES.USERS);
+  const { getMemorizedFilters: getMemorizedFiltersUsers } = useMemorizeFilters(
+    POSSIBLE_FILTERS_ENTITIES.USERS
+  );
 
-  const userId = getMemorizedFiltersUsers().id;
+  const userId = getMemorizedFiltersUsers()?.id;
 
   const { on: socketOn, off: socketOff } = useSocket(userId);
 
-  const formatRelativeTime = (dateStr) => {
-    console.log('dateStr', dateStr)
-    const utcDate = new Date(dateStr);
+  const addNewNotification = useCallback(
+    (newNotifData) => {
+      const mappedNewNotif = {
+        id: newNotifData.id,
+        text: newNotifData.title,
+        time: formatRelativeTime(newNotifData.createdAt),
+        read: false,
+        entity: newNotifData.entity,
+        idEntity: newNotifData.idEntity,
+        link: newNotifData.path,
+        typeOfAction: newNotifData.typeOfAction
+      };
 
-    const brDate = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
+      setNotifications((prev) => [mappedNewNotif, ...prev]);
 
-    const nowUtc = new Date();
-    const nowBr = new Date(nowUtc.getTime());
-
-    const diff = nowBr - brDate;
-
-    if (diff < 0) return "Agora";
-
-    const minutes = Math.floor(diff / 60000);
-
-    if (minutes < 1) return "Agora";
-    if (minutes < 60) return `${minutes} min atrás`;
-
-    const hours = Math.floor(minutes / 60);
-
-    if (hours < 24) return `${hours} hora${hours > 1 ? "s" : ""} atrás`;
-
-    const days = Math.floor(hours / 24);
-
-    const result = `${days} dia${days > 1 ? "s" : ""} atrás`;
-
-    return result;
-  };
-
-  const addNewNotification = (newNotifData) => {
-    const mappedNewNotif = {
-      id: newNotifData.id,
-      text: newNotifData.title,
-      time: formatRelativeTime(newNotifData.createdAt), 
-      read: false, 
-      entity: newNotifData.entity,
-      idEntity: newNotifData.idEntity,
-      link: newNotifData.path,
-      typeOfAction: newNotifData.typeOfAction,
-    };
-
-    setNotifications((prev) => [mappedNewNotif, ...prev]);
-
-    setFlashMessage('Nova notificação recebida!', 'info');
-  };
+      setFlashMessage('Nova notificação recebida!', 'info');
+    },
+    [setFlashMessage]
+  );
 
   const getTypeColor = (entity) => {
     const colors = {
       'Registro Mensal': styles.typeRelatorio,
-      'Anotação': styles.typeAnotacao,
-      'Usuario': styles.typeUsuario,
-      'Transação': styles.typeTransacao
+      Anotação: styles.typeAnotacao,
+      Usuario: styles.typeUsuario,
+      Transação: styles.typeTransacao
     };
     return colors[entity] || styles.typeDefault;
   };
 
   const getActionColor = (action) => {
     const colors = {
-      'Criação': styles.actionCriacao,
-      'Atualização': styles.actionAtualizacao,
-      'Exclusão': styles.actionExclusao,
-      'Exportação': styles.actionExportacao,
-      'Lembrete': styles.actionLembrete
+      Criação: styles.actionCriacao,
+      Atualização: styles.actionAtualizacao,
+      Exclusão: styles.actionExclusao,
+      Exportação: styles.actionExportacao,
+      Lembrete: styles.actionLembrete
     };
     return colors[action] || styles.actionDefault;
   };
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
       const response = await ServiceNotification.getByAllNotification();
@@ -116,7 +118,7 @@ const NotificationsDropdown = ({ onClose }) => {
           entity: n.entity,
           idEntity: n.idEntity,
           link: n.path,
-          typeOfAction: n.typeOfAction,
+          typeOfAction: n.typeOfAction
         }));
         setNotifications(mappedNotifications);
       }
@@ -125,26 +127,20 @@ const NotificationsDropdown = ({ onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchUpdateNewNotifications = async () => {
-    try {
-      await ServiceNotification.updateAllNotificationNew();
-    } catch (error) {
-      console.error('Erro ao buscar notificações:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
   }, []);
 
   useEffect(() => {
-    fetchUpdateNewNotifications();
-  }, [notifications]);
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   useEffect(() => {
-    if (!userId) return; 
+    ServiceNotification.updateAllNotificationNew().catch((error) => {
+      console.error('Erro ao atualizar notificações novas:', error);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
 
     const handleNewNotification = (data) => {
       console.log('Nova notificação via Socket.IO:', data);
@@ -156,16 +152,28 @@ const NotificationsDropdown = ({ onClose }) => {
     return () => {
       socketOff('newNotification', handleNewNotification);
     };
-  }, [userId, socketOn, socketOff]); 
+  }, [addNewNotification, userId, socketOn, socketOff]);
 
-  const uniqueEntities = [...new Set(notifications.map(n => n.entity))];
-  const typeOptions = [
-    { value: 'todos', label: 'Todos os tipos' },
-    ...uniqueEntities.map(entity => ({ value: entity, label: entity }))
-  ].sort((a, b) => a.label.localeCompare(b.label));
+  const typeOptions = useMemo(
+    () =>
+      [
+        { value: 'todos', label: 'Todos os tipos' },
+        ...[
+          ...new Set(notifications.map((notification) => notification.entity))
+        ]
+          .filter(Boolean)
+          .map((entity) => ({ value: entity, label: entity }))
+      ].sort((a, b) => a.label.localeCompare(b.label)),
+    [notifications]
+  );
 
-  const baseNotifications = notifications.filter((n) =>
-    typeFilter === 'todos' || n.entity === typeFilter
+  const baseNotifications = useMemo(
+    () =>
+      notifications.filter(
+        (notification) =>
+          typeFilter === 'todos' || notification.entity === typeFilter
+      ),
+    [notifications, typeFilter]
   );
 
   const unreadCount = baseNotifications.filter((n) => !n.read).length;
@@ -173,13 +181,48 @@ const NotificationsDropdown = ({ onClose }) => {
   const totalCount = baseNotifications.length;
 
   const markAsRead = async (id) => {
+    const wasUnread = notifications.some(
+      (notification) => notification.id === id && !notification.read
+    );
+
     try {
       await ServiceNotification.markReadNotification({ ids: [id] });
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, read: true } : n))
       );
+      if (wasUnread) onNotificationChange?.(-1);
     } catch (error) {
       console.error('Erro ao marcar como lida:', error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    const unreadIds = notifications
+      .filter((notification) => !notification.read)
+      .map((notification) => notification.id);
+    if (unreadIds.length === 0) return;
+
+    try {
+      setMarkingAll(true);
+      await ServiceNotification.markReadNotification({ ids: unreadIds });
+      const unreadSet = new Set(unreadIds);
+      setNotifications((currentNotifications) =>
+        currentNotifications.map((notification) =>
+          unreadSet.has(notification.id)
+            ? { ...notification, read: true }
+            : notification
+        )
+      );
+      onNotificationChange?.(-unreadIds.length);
+      setFlashMessage(
+        'Todas as notificações foram marcadas como lidas',
+        'success'
+      );
+    } catch (error) {
+      console.error('Erro ao marcar todas como lidas:', error);
+      setFlashMessage('Erro ao marcar notificações como lidas', 'error');
+    } finally {
+      setMarkingAll(false);
     }
   };
 
@@ -201,7 +244,9 @@ const NotificationsDropdown = ({ onClose }) => {
     }
 
     try {
-      const noteResponse = await ServiceNotes.getByIdNotes(notification.idEntity);
+      const noteResponse = await ServiceNotes.getByIdNotes(
+        notification.idEntity
+      );
       if (noteResponse.data.status !== 'OK') {
         setFlashMessage('Erro ao carregar anotação', 'error');
         history.push('/anotacoes');
@@ -226,7 +271,9 @@ const NotificationsDropdown = ({ onClose }) => {
 
       const routineData = routineResponse.data.data;
       console.log('routineData', routineData);
-      const routineDate = (noteData.dateOfNote || routineData.created_at).split('T')[0];
+      const routineDate = (noteData.dateOfNote || routineData.created_at).split(
+        'T'
+      )[0];
       console.log('routineDate', routineDate);
 
       const queryParams = new URLSearchParams({
@@ -270,7 +317,10 @@ const NotificationsDropdown = ({ onClose }) => {
   if (loading) {
     return (
       <div className={`${styles.dropdown} ${styles[theme]}`}>
-        <div className={styles.dropdownHeader} style={{ background: emphasisColor || 'rgb(20, 18, 129)' }}>
+        <div
+          className={styles.dropdownHeader}
+          style={{ background: emphasisColor || 'rgb(20, 18, 129)' }}
+        >
           <div className={styles.dropdownHeaderInner}>
             <div className={styles.dropdownHeaderLeft}>
               <Bell className={styles.dropdownBellIcon} />
@@ -330,36 +380,54 @@ const NotificationsDropdown = ({ onClose }) => {
               <button
                 onClick={() => setFilter('todas')}
                 className={`${styles.filterButton} ${filter === 'todas' ? styles.filterButtonActive : ''}`}
-                style={filter === 'todas' ? {
-                  backgroundColor: emphasisColor || 'rgb(20, 18, 129)'
-                } : {}}
+                style={
+                  filter === 'todas'
+                    ? {
+                        backgroundColor: emphasisColor || 'rgb(20, 18, 129)'
+                      }
+                    : {}
+                }
               >
                 Todas
-                <span className={`${styles.filterBadge} ${filter === 'todas' ? styles.filterBadgeActive : ''}`}>
+                <span
+                  className={`${styles.filterBadge} ${filter === 'todas' ? styles.filterBadgeActive : ''}`}
+                >
                   {totalCount}
                 </span>
               </button>
               <button
                 onClick={() => setFilter('naoLidas')}
                 className={`${styles.filterButton} ${filter === 'naoLidas' ? styles.filterButtonActive : ''}`}
-                style={filter === 'naoLidas' ? {
-                  backgroundColor: emphasisColor || 'rgb(20, 18, 129)'
-                } : {}}
+                style={
+                  filter === 'naoLidas'
+                    ? {
+                        backgroundColor: emphasisColor || 'rgb(20, 18, 129)'
+                      }
+                    : {}
+                }
               >
                 Não Lidas
-                <span className={`${styles.filterBadge} ${filter === 'naoLidas' ? styles.filterBadgeUnread : ''}`}>
+                <span
+                  className={`${styles.filterBadge} ${filter === 'naoLidas' ? styles.filterBadgeUnread : ''}`}
+                >
                   {unreadCount}
                 </span>
               </button>
               <button
                 onClick={() => setFilter('lidas')}
                 className={`${styles.filterButton} ${filter === 'lidas' ? styles.filterButtonActive : ''}`}
-                style={filter === 'lidas' ? {
-                  backgroundColor: emphasisColor || 'rgb(20, 18, 129)'
-                } : {}}
+                style={
+                  filter === 'lidas'
+                    ? {
+                        backgroundColor: emphasisColor || 'rgb(20, 18, 129)'
+                      }
+                    : {}
+                }
               >
                 Lidas
-                <span className={`${styles.filterBadge} ${filter === 'lidas' ? styles.filterBadgeActive : ''}`}>
+                <span
+                  className={`${styles.filterBadge} ${filter === 'lidas' ? styles.filterBadgeActive : ''}`}
+                >
                   {readCount}
                 </span>
               </button>
@@ -389,7 +457,9 @@ const NotificationsDropdown = ({ onClose }) => {
                         setShowFilterMenu(false);
                       }}
                       className={`${styles.typeFilterOption} ${
-                        typeFilter === option.value ? styles.typeFilterOptionActive : ''
+                        typeFilter === option.value
+                          ? styles.typeFilterOptionActive
+                          : ''
                       }`}
                     >
                       {option.label}
@@ -403,6 +473,18 @@ const NotificationsDropdown = ({ onClose }) => {
             </div>
 
             {/* Clear Read Button */}
+            {notifications.some((notification) => !notification.read) && (
+              <button
+                type="button"
+                onClick={markAllAsRead}
+                className={styles.markAllButton}
+                disabled={markingAll}
+              >
+                <CheckCheck className={styles.markAllIcon} />
+                {markingAll ? 'Marcando...' : 'Ler todas'}
+              </button>
+            )}
+
             {readCount > 0 && (
               <button
                 onClick={clearReadNotifications}
@@ -439,33 +521,51 @@ const NotificationsDropdown = ({ onClose }) => {
                     <div className={styles.indicatorWrapper}>
                       <div
                         className={`${styles.indicator} ${
-                          !notification.read ? styles.indicatorUnread : styles.indicatorRead
+                          !notification.read
+                            ? styles.indicatorUnread
+                            : styles.indicatorRead
                         }`}
-                        style={!notification.read ? {
-                          backgroundColor: emphasisColor || '#6366f1'
-                        } : {}}
+                        style={
+                          !notification.read
+                            ? {
+                                backgroundColor: emphasisColor || '#6366f1'
+                              }
+                            : {}
+                        }
                       />
                     </div>
 
                     {/* Content */}
                     <div
                       className={styles.notificationContent}
-                      onClick={() => !notification.read && markAsRead(notification.id)}
+                      onClick={() =>
+                        !notification.read && markAsRead(notification.id)
+                      }
                     >
-                      <p className={`${styles.notificationText} ${
-                        !notification.read ? styles.notificationTextUnread : ''
-                      }`}>
+                      <p
+                        className={`${styles.notificationText} ${
+                          !notification.read
+                            ? styles.notificationTextUnread
+                            : ''
+                        }`}
+                      >
                         {notification.text}
                       </p>
 
                       <div className={styles.notificationMeta}>
-                        <span className={`${styles.typeBadge} ${getTypeColor(notification.entity)}`}>
+                        <span
+                          className={`${styles.typeBadge} ${getTypeColor(notification.entity)}`}
+                        >
                           {notification.entity}
                         </span>
-                        <span className={`${styles.actionBadge} ${getActionColor(notification.typeOfAction)}`}>
+                        <span
+                          className={`${styles.actionBadge} ${getActionColor(notification.typeOfAction)}`}
+                        >
                           {notification.typeOfAction}
                         </span>
-                        <span className={styles.notificationTime}>{notification.time}</span>
+                        <span className={styles.notificationTime}>
+                          {notification.time}
+                        </span>
                       </div>
                     </div>
 

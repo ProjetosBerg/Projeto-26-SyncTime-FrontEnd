@@ -1,15 +1,11 @@
 // ⚙️ React e bibliotecas externas
-import { memo, useCallback, useState, useEffect } from 'react';
+import { lazy, memo, Suspense, useCallback, useEffect, useState } from 'react';
 import { Bell, Zap, User } from 'lucide-react';
 
 // 💅 Estilos
 import styles from './Header.module.css';
 
 // 🧩 Componentes
-import Streak from '../streak/Streak';
-import NotificationsDropdown from '../notification/NotificationsDropdown';
-import ProfileDropdown from '../settings/ProfileDropdown';
-
 // 🧠 Hooks customizados
 import { useEmphasisColor } from '../../hooks/useEmphasisColor';
 import {
@@ -19,6 +15,12 @@ import {
 import { useSocket } from '../../hooks/useSocket';
 import ServiceUsers from '../../services/ServiceUsers';
 import ServiceNotification from '../notification/services/ServiceNotification';
+
+const Streak = lazy(() => import('../streak/Streak'));
+const NotificationsDropdown = lazy(
+  () => import('../notification/NotificationsDropdown')
+);
+const ProfileDropdown = lazy(() => import('../settings/ProfileDropdown'));
 
 const Header = () => {
   const { emphasisColor } = useEmphasisColor();
@@ -271,13 +273,15 @@ const Header = () => {
                 </button>
 
                 {/* Notifications Dropdown */}
-                {showNotifications && (
-                  <NotificationsDropdown
-                    onClose={handleCloseNotifications}
-                    initialUnreadCount={notificationCount}
-                    onNotificationChange={handleNotificationChange}
-                  />
-                )}
+                <Suspense fallback={null}>
+                  {showNotifications && (
+                    <NotificationsDropdown
+                      onClose={handleCloseNotifications}
+                      initialUnreadCount={notificationCount}
+                      onNotificationChange={handleNotificationChange}
+                    />
+                  )}
+                </Suspense>
               </div>
 
               {/* User Profile */}
@@ -303,22 +307,24 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Render Streak Modal */}
-      {showStreakModal && (
-        <Streak
-          streakDays={streakDays}
-          weekDays={weekDays}
-          weekProgress={weekProgress}
-          completedDaysThisWeek={completedDaysThisWeek}
-          onClose={() => setShowStreakModal(false)}
-          getFlameColor={getFlameColor}
-        />
-      )}
+      <Suspense fallback={null}>
+        {/* Render Streak Modal */}
+        {showStreakModal && (
+          <Streak
+            streakDays={streakDays}
+            weekDays={weekDays}
+            weekProgress={weekProgress}
+            completedDaysThisWeek={completedDaysThisWeek}
+            onClose={() => setShowStreakModal(false)}
+            getFlameColor={getFlameColor}
+          />
+        )}
 
-      {/* Render Profile Dropdown */}
-      {showProfileDropdown && (
-        <ProfileDropdown onClose={() => setShowProfileDropdown(false)} />
-      )}
+        {/* Render Profile Dropdown */}
+        {showProfileDropdown && (
+          <ProfileDropdown onClose={() => setShowProfileDropdown(false)} />
+        )}
+      </Suspense>
     </>
   );
 };
