@@ -20,7 +20,13 @@ import useFlashMessage from '../../../../../../hooks/userFlashMessage';
 // 📡 Services
 import ServiceRecordType from '../services/ServiceRecordType';
 import LoadingSpinner from '../../../../../../components/loading/LoadingSpinner';
-import { iconLabels, iconMap } from '../../../../../../utils/iconsConfig';
+import {
+  iconLabels,
+  iconMap,
+  resolveIconComponent,
+  resolveIconLabel,
+  resolveIconName
+} from '../../../../../../utils/iconsConfig';
 
 const RecordTypeForm = () => {
   const { id } = useParams();
@@ -54,13 +60,14 @@ const RecordTypeForm = () => {
 
         if (response.data.status === 'OK') {
           const recordTypeData = response.data.data;
+          const resolvedIconName = resolveIconName(recordTypeData.icone);
           reset({
             name: recordTypeData.name || '',
             icon: recordTypeData.icone
               ? {
-                  value: recordTypeData.icone,
-                  label: iconLabels[recordTypeData.icone],
-                  icon: recordTypeData.icone
+                  value: resolvedIconName,
+                  label: resolveIconLabel(resolvedIconName),
+                  icon: resolvedIconName
                 }
               : null
           });
@@ -85,7 +92,7 @@ const RecordTypeForm = () => {
 
   const IconOption = (props) => {
     const { data, innerProps, innerRef } = props;
-    const IconComponent = iconMap[data.value];
+    const IconComponent = resolveIconComponent(data.value);
 
     return (
       <div
@@ -100,7 +107,7 @@ const RecordTypeForm = () => {
         }}
       >
         <IconComponent size={20} style={{ marginRight: '8px' }} />
-        <span>{iconLabels[data.value]}</span>
+        <span>{resolveIconLabel(data.value)}</span>
       </div>
     );
   };
@@ -114,7 +121,7 @@ const RecordTypeForm = () => {
       return <div>Selecione um ícone.</div>;
     }
 
-    const IconComponent = iconMap[selectedIcon.value];
+    const IconComponent = resolveIconComponent(selectedIcon.value);
 
     return (
       <div
@@ -122,7 +129,7 @@ const RecordTypeForm = () => {
         style={{ display: 'flex', alignItems: 'center' }}
       >
         <IconComponent size={20} style={{ marginRight: '8px' }} />
-        <span>{iconLabels[selectedIcon.value]}</span>
+        <span>{resolveIconLabel(selectedIcon.value)}</span>
       </div>
     );
   };

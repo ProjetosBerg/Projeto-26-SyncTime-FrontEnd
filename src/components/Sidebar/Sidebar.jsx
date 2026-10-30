@@ -28,9 +28,8 @@ import ServiceCategory from '../../views/sectionConfigSystem/Sections/Report/Cat
 import useAuth from '../../hooks/userAuth';
 
 // 🔗 Ícones Lucide
-import { iconMap } from '../../utils/iconsConfig';
-import Mascote from '../../assets/mascote-synctime.png'
-
+import { resolveIconComponent } from '../../utils/iconsConfig';
+import Mascote from '../../assets/mascote-synctime.png';
 
 function Sidebar({ onToggle }) {
   const location = useLocation();
@@ -56,10 +55,9 @@ function Sidebar({ onToggle }) {
     try {
       setIsLoadingDashboard(true);
       const mockData = [
-        { id: 1, name: 'Categoria', path: '/dashboard/categoria' },
+        { id: 1, name: 'Categoria', path: '/dashboard/categoria' }
       ];
       setDashboardSubMenu(mockData);
-  
     } catch (err) {
       console.error('Erro ao carregar menu do Dashboard:', err);
     } finally {
@@ -139,7 +137,7 @@ function Sidebar({ onToggle }) {
     relatoriosSubMenu.forEach((recordType) => {
       recordType.categorias?.forEach((cat) => {
         if (location.pathname === cat.path) {
-          setOpenCategories(prev => ({ ...prev, [recordType.id]: true }));
+          setOpenCategories((prev) => ({ ...prev, [recordType.id]: true }));
         }
       });
     });
@@ -156,7 +154,7 @@ function Sidebar({ onToggle }) {
     await logout();
   };
 
-  const isActive = (path) => location.pathname === path ? styles.active : '';
+  const isActive = (path) => (location.pathname === path ? styles.active : '');
 
   const toggleMinimize = () => {
     setIsMinimized(!isMinimized);
@@ -164,9 +162,13 @@ function Sidebar({ onToggle }) {
   };
 
   const toggleMobileMenu = () => setIsMobileOpen(!isMobileOpen);
-  const closeMobileMenu = () => { if (isMobile) setIsMobileOpen(false); };
+  const closeMobileMenu = () => {
+    if (isMobile) setIsMobileOpen(false);
+  };
 
-  const handleMouseEnter = () => { if (isMinimized && !isMobile) setIsHovered(true); };
+  const handleMouseEnter = () => {
+    if (isMinimized && !isMobile) setIsHovered(true);
+  };
   const handleMouseLeave = (e) => {
     if (isMinimized && !isMobile) {
       const sidebar = e.currentTarget;
@@ -180,18 +182,24 @@ function Sidebar({ onToggle }) {
   const toggleCategory = (categoryId, e) => {
     e.preventDefault();
     e.stopPropagation();
-    setOpenCategories(prev => ({ ...prev, [categoryId]: !prev[categoryId] }));
+    setOpenCategories((prev) => ({ ...prev, [categoryId]: !prev[categoryId] }));
   };
 
   return (
     <>
       {isMobile && (
-        <button className={styles.mobileToggle} onClick={toggleMobileMenu} aria-label="Toggle menu">
+        <button
+          className={styles.mobileToggle}
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
+        >
           <FaBars />
         </button>
       )}
 
-      {isMobile && isMobileOpen && <div className={styles.overlay} onClick={closeMobileMenu}></div>}
+      {isMobile && isMobileOpen && (
+        <div className={styles.overlay} onClick={closeMobileMenu}></div>
+      )}
 
       <aside
         className={`${styles.sidebar} ${styles[theme]} 
@@ -201,21 +209,32 @@ function Sidebar({ onToggle }) {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className={styles.sidebarHeader} style={{ backgroundColor: emphasisColor || 'rgb(20, 18, 129)' }}>
+        <div
+          className={styles.sidebarHeader}
+          style={{ backgroundColor: emphasisColor || 'rgb(20, 18, 129)' }}
+        >
           {showExpanded && (
             <div className={styles.logoContainer}>
-              <img src={Mascote} alt="Logo" className={styles.logo}  />
+              <img src={Mascote} alt="Logo" className={styles.logo} />
             </div>
           )}
 
           {!isMobile && (
-            <button className={styles.toggleButton} onClick={toggleMinimize} aria-label={isMinimized ? 'Expandir' : 'Minimizar'}>
+            <button
+              className={styles.toggleButton}
+              onClick={toggleMinimize}
+              aria-label={isMinimized ? 'Expandir' : 'Minimizar'}
+            >
               {isMinimized ? <FaBars /> : <FaTimes />}
             </button>
           )}
 
           {isMobile && (
-            <button className={styles.closeButton} onClick={closeMobileMenu} aria-label="Fechar">
+            <button
+              className={styles.closeButton}
+              onClick={closeMobileMenu}
+              aria-label="Fechar"
+            >
               <FaTimes />
             </button>
           )}
@@ -225,21 +244,33 @@ function Sidebar({ onToggle }) {
           {showExpanded && <h3 className={styles.menuTitle}>Principal</h3>}
           <ul className={styles.menuList}>
             <li>
-              <Link to="/inicio" className={`${styles.menuItem} ${isActive('/inicio')}`} onClick={closeMobileMenu}>
+              <Link
+                to="/inicio"
+                className={`${styles.menuItem} ${isActive('/inicio')}`}
+                onClick={closeMobileMenu}
+              >
                 <FaHome className={styles.icon} />
                 {showExpanded && <span>Início</span>}
               </Link>
             </li>
 
             <li>
-              <Link to="/meu-dia" className={`${styles.menuItem} ${isActive('/meu-dia')}`} onClick={closeMobileMenu}>
+              <Link
+                to="/meu-dia"
+                className={`${styles.menuItem} ${isActive('/meu-dia')}`}
+                onClick={closeMobileMenu}
+              >
                 <FaCalendarDay className={styles.icon} />
                 {showExpanded && <span>Meu Dia</span>}
               </Link>
             </li>
 
             <li>
-              <Link to="/metas" className={`${styles.menuItem} ${isActive('/metas')}`} onClick={closeMobileMenu}>
+              <Link
+                to="/metas"
+                className={`${styles.menuItem} ${isActive('/metas')}`}
+                onClick={closeMobileMenu}
+              >
                 <FaBullseye className={styles.icon} />
                 {showExpanded && <span>Metas</span>}
               </Link>
@@ -249,7 +280,9 @@ function Sidebar({ onToggle }) {
               <div className={styles.menuItemWrapper}>
                 <button
                   className={`${styles.menuItem} ${styles.menuItemDropdown} ${
-                    location.pathname.startsWith('/dashboard') ? styles.active : ''
+                    location.pathname.startsWith('/dashboard')
+                      ? styles.active
+                      : ''
                   }`}
                   onClick={() => setIsDashboardOpen(!isDashboardOpen)}
                 >
@@ -258,7 +291,11 @@ function Sidebar({ onToggle }) {
                     <>
                       <span>Dashboard</span>
                       <span className={styles.dropdownIcon}>
-                        {isDashboardOpen ? <FaChevronDown /> : <FaChevronRight />}
+                        {isDashboardOpen ? (
+                          <FaChevronDown />
+                        ) : (
+                          <FaChevronRight />
+                        )}
                       </span>
                     </>
                   )}
@@ -269,9 +306,11 @@ function Sidebar({ onToggle }) {
                     {isLoadingDashboard ? (
                       <li className={styles.loadingItem}>Carregando...</li>
                     ) : dashboardSubMenu.length === 0 ? (
-                      <li className={styles.emptyItem}>Nenhum item disponível</li>
+                      <li className={styles.emptyItem}>
+                        Nenhum item disponível
+                      </li>
                     ) : (
-                      dashboardSubMenu.map(item => (
+                      dashboardSubMenu.map((item) => (
                         <li key={item.id}>
                           <Link
                             to={item.path}
@@ -279,7 +318,10 @@ function Sidebar({ onToggle }) {
                             onClick={closeMobileMenu}
                             style={
                               location.pathname === item.path
-                                ? { borderLeftColor: emphasisColor || '#3b82f6', color: emphasisColor || '#3b82f6' }
+                                ? {
+                                    borderLeftColor: emphasisColor || '#3b82f6',
+                                    color: emphasisColor || '#3b82f6'
+                                  }
                                 : {}
                             }
                           >
@@ -297,7 +339,9 @@ function Sidebar({ onToggle }) {
               <div className={styles.menuItemWrapper}>
                 <button
                   className={`${styles.menuItem} ${styles.menuItemDropdown} ${
-                    location.pathname.startsWith('/relatorios') ? styles.active : ''
+                    location.pathname.startsWith('/relatorios')
+                      ? styles.active
+                      : ''
                   }`}
                   onClick={() => setIsRelatoriosOpen(!isRelatoriosOpen)}
                 >
@@ -306,7 +350,11 @@ function Sidebar({ onToggle }) {
                     <>
                       <span>Relatórios</span>
                       <span className={styles.dropdownIcon}>
-                        {isRelatoriosOpen ? <FaChevronDown /> : <FaChevronRight />}
+                        {isRelatoriosOpen ? (
+                          <FaChevronDown />
+                        ) : (
+                          <FaChevronRight />
+                        )}
                       </span>
                     </>
                   )}
@@ -319,43 +367,55 @@ function Sidebar({ onToggle }) {
                     ) : errorRelatorios ? (
                       <li className={styles.errorItem}>{errorRelatorios}</li>
                     ) : relatoriosSubMenu.length === 0 ? (
-                      <li className={styles.emptyItem}>Nenhuma categoria encontrada</li>
+                      <li className={styles.emptyItem}>
+                        Nenhuma categoria encontrada
+                      </li>
                     ) : (
-                      relatoriosSubMenu.map(recordType => {
-                        const Icon = iconMap[recordType.icon];
+                      relatoriosSubMenu.map((recordType) => {
+                        const Icon = resolveIconComponent(recordType.icon);
                         return (
                           <li key={recordType.id}>
                             <button
                               className={`${styles.submenuItem} ${styles.submenuItemDropdown}`}
                               onClick={(e) => toggleCategory(recordType.id, e)}
                             >
-                              {Icon && <Icon className={styles.icon} />}
+                              <Icon className={styles.icon} />
                               <span>{recordType.name}</span>
                               <span className={styles.submenuArrow}>
-                                {openCategories[recordType.id] ? <FaChevronDown /> : <FaChevronRight />}
+                                {openCategories[recordType.id] ? (
+                                  <FaChevronDown />
+                                ) : (
+                                  <FaChevronRight />
+                                )}
                               </span>
                             </button>
 
-                            {openCategories[recordType.id] && recordType.categorias && (
-                              <ul className={styles.subSubmenu}>
-                                {recordType.categorias.map(categoria => (
-                                  <li key={categoria.id}>
-                                    <Link
-                                      to={categoria.path}
-                                      className={`${styles.subSubmenuItem} ${isActive(categoria.path)}`}
-                                      onClick={closeMobileMenu}
-                                      style={
-                                        location.pathname === categoria.path
-                                          ? { borderLeftColor: emphasisColor || '#3b82f6', color: emphasisColor || '#3b82f6' }
-                                          : {}
-                                      }
-                                    >
-                                      {categoria.name}
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
+                            {openCategories[recordType.id] &&
+                              recordType.categorias && (
+                                <ul className={styles.subSubmenu}>
+                                  {recordType.categorias.map((categoria) => (
+                                    <li key={categoria.id}>
+                                      <Link
+                                        to={categoria.path}
+                                        className={`${styles.subSubmenuItem} ${isActive(categoria.path)}`}
+                                        onClick={closeMobileMenu}
+                                        style={
+                                          location.pathname === categoria.path
+                                            ? {
+                                                borderLeftColor:
+                                                  emphasisColor || '#3b82f6',
+                                                color:
+                                                  emphasisColor || '#3b82f6'
+                                              }
+                                            : {}
+                                        }
+                                      >
+                                        {categoria.name}
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                           </li>
                         );
                       })
@@ -366,7 +426,11 @@ function Sidebar({ onToggle }) {
             </li>
 
             <li>
-              <Link to="/anotacoes" className={`${styles.menuItem} ${isActive('/anotacoes')}`} onClick={closeMobileMenu}>
+              <Link
+                to="/anotacoes"
+                className={`${styles.menuItem} ${isActive('/anotacoes')}`}
+                onClick={closeMobileMenu}
+              >
                 <FaStickyNote className={styles.icon} />
                 {showExpanded && <span>Anotações</span>}
               </Link>
@@ -378,7 +442,11 @@ function Sidebar({ onToggle }) {
           {showExpanded && <h3 className={styles.menuTitle}>Configurações</h3>}
           <ul className={styles.menuList}>
             <li>
-              <Link to="/configuracoes" className={`${styles.menuItem} ${isActive('/configuracoes')}`} onClick={closeMobileMenu}>
+              <Link
+                to="/configuracoes"
+                className={`${styles.menuItem} ${isActive('/configuracoes')}`}
+                onClick={closeMobileMenu}
+              >
                 <FaCog className={styles.icon} />
                 {showExpanded && <span>Configuração do Sistema</span>}
               </Link>

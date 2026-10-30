@@ -375,3 +375,47 @@ export const iconMap = {
   TreePine,
   Flame
 };
+
+const normalizeIconValue = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+const legacyIconAliases = {
+  compras: 'ShoppingCart',
+  compra: 'ShoppingCart',
+  financeiro: 'DollarSign',
+  financas: 'DollarSign',
+  educacao: 'GraduationCap',
+  estudos: 'Book',
+  trabalho: 'Briefcase',
+  pessoal: 'User',
+  saude: 'Heart',
+  viagem: 'Globe',
+  projetos: 'Target',
+  projeto: 'Target'
+};
+
+export const resolveIconName = (value) => {
+  if (value && iconMap[value]) return value;
+
+  const normalizedValue = normalizeIconValue(value);
+  const legacyName = legacyIconAliases[normalizedValue];
+  if (legacyName && iconMap[legacyName]) return legacyName;
+
+  const labelMatch = Object.keys(iconLabels).find(
+    (iconName) => normalizeIconValue(iconLabels[iconName]) === normalizedValue
+  );
+
+  return labelMatch && iconMap[labelMatch] ? labelMatch : 'FileText';
+};
+
+export const resolveIconComponent = (value) =>
+  iconMap[resolveIconName(value)] || FileText;
+
+export const resolveIconLabel = (value) => {
+  const iconName = resolveIconName(value);
+  return iconLabels[iconName] || iconLabels.FileText;
+};
