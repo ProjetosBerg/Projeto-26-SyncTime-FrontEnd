@@ -3,7 +3,7 @@ import { useForm, Controller, useWatch } from 'react-hook-form';
 import { useParams, useHistory } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody, Row, Col } from 'reactstrap';
 import { ErrorMessage } from '@hookform/error-message';
-import { Edit, Trash2, Plus } from 'lucide-react';
+import { PencilLine, Plus, Trash } from 'lucide-react';
 
 // 💅 Estilos
 import styles from './CustomFieldForm.module.css';
@@ -657,7 +657,7 @@ const CustomFieldForm = () => {
                               title="Editar"
                               disabled={loading}
                             >
-                              <Edit size={16} />
+                              <PencilLine size={17} />
                             </button>
                             <button
                               type="button"
@@ -666,7 +666,7 @@ const CustomFieldForm = () => {
                               title="Deletar"
                               disabled={loading}
                             >
-                              <Trash2 size={16} />
+                              <Trash size={17} />
                             </button>
                           </div>
                         </div>

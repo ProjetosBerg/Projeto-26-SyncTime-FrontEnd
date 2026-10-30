@@ -281,14 +281,19 @@
 
 .editButton,
 .deleteButton {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 650;
   cursor: pointer;
   transition: all 0.2s ease;
   color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .editButton.light:hover {
@@ -300,7 +305,9 @@
 }
 
 .deleteButton.light {
-  background: #ef4444;
+  color: #dc2626;
+  background: #fef2f2;
+  border-color: #fecaca;
 }
 
 .deleteButton.light:hover {
@@ -308,7 +315,9 @@
 }
 
 .deleteButton.dark {
-  background: #dc2626;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(248, 113, 113, 0.3);
 }
 
 .deleteButton.dark:hover {

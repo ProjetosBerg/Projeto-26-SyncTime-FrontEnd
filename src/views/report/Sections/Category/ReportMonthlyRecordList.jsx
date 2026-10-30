@@ -1,6 +1,6 @@
 // ⚙️ Bibliotecas externas
 import { useEffect, useState } from 'react';
-import { Edit, ExternalLink, FileText, Plus, Trash2 } from 'lucide-react';
+import { ExternalLink, FileText, PencilLine, Plus, Trash } from 'lucide-react';
 import { useHistory } from 'react-router-dom';
 
 // 💅 Estilos
@@ -228,14 +228,14 @@ const ReportMonthlyRecordList = () => {
             onClick={() => onEdit(row.id)}
             title="Editar registro"
           >
-            <Edit size={16} />
+            <PencilLine size={17} />
           </button>
           <button
             className={styles.deleteButton}
             onClick={() => onDelete(row.id)}
             title="Excluir registro"
           >
-            <Trash2 size={16} />
+            <Trash size={17} />
           </button>
         </div>
       )

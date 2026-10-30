@@ -1,4 +1,4 @@
-import { Plus, X } from 'lucide-react';
+import { Plus, Trash, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { ErrorMessage } from '@hookform/error-message';
@@ -319,7 +319,7 @@ const CreateRoutine = ({
                         className={`${styles.deleteButton} ${styles[theme]}`} 
                         disabled={loading}
                       >
-                        <X size={18} />
+                        <Trash size={17} />
                       </button>
                     </div>
                     {note.notes && note.notes.length > 0 && (

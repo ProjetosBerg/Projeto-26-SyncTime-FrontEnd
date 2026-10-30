@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTheme } from '../../../../hooks/useTheme';
 import { useEmphasisColor } from '../../../../hooks/useEmphasisColor';
-import { Plus } from 'lucide-react';
+import { PencilLine, Plus, Trash } from 'lucide-react';
 import styles from './NoteList.module.css';
 
 const NoteList = ({
@@ -205,12 +205,14 @@ const NoteList = ({
                         backgroundColor: emphasisColor || '#667eea'
                       }}
                     >
+                      <PencilLine size={15} />
                       Editar
                     </button>
                     <button
                       className={`${styles.deleteButton} ${styles[theme]}`}
                       onClick={() => onDeleteNote(note.id)}
                     >
+                      <Trash size={15} />
                       Deletar
                     </button>
                   </div>

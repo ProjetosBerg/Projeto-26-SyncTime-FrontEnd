@@ -1,6 +1,6 @@
 // ⚙️ Bibliotecas externas
 import { useEffect, useRef, useState } from 'react';
-import { Edit, Trash2 } from 'lucide-react';
+import { PencilLine, Trash } from 'lucide-react';
 import { useHistory, useLocation } from 'react-router-dom';
 import useFlashMessage from '../../../../../hooks/userFlashMessage';
 import { useTheme } from '../../../../../hooks/useTheme';
@@ -292,11 +292,8 @@ const TransactionList = () => {
           }}
           title="Editar transação"
           aria-label={`Editar transação ${row.title}`}
-          style={{
-            backgroundColor: '#3b82f6'
-          }}
         >
-          <Edit size={16} />
+          <PencilLine size={17} />
         </button>
         <button
           type="button"
@@ -308,7 +305,7 @@ const TransactionList = () => {
           title="Excluir transação"
           aria-label={`Excluir transação ${row.title}`}
         >
-          <Trash2 size={16} />
+          <Trash size={17} />
         </button>
       </div>
     )

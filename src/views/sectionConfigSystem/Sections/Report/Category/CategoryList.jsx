@@ -1,6 +1,6 @@
 // ⚙️ Bibliotecas externas
 import { useEffect, useState } from "react";
-import { Edit, Trash2 } from "lucide-react";
+import { PencilLine, Trash } from "lucide-react";
 import { useHistory } from 'react-router-dom';
 
 // 💅 Estilos
@@ -92,14 +92,21 @@ const CategoryList = () => {
       sortable: false,
       render: (row, idx, { onEdit, onDelete }) => (
         <div className={styles.actionsCell}>
-          <button className={styles.editButton} onClick={() => onEdit(row.id)}>
-            <Edit size={16} />
+          <button
+            className={styles.editButton}
+            onClick={() => onEdit(row.id)}
+            title="Editar categoria"
+            aria-label={`Editar categoria ${row.name}`}
+          >
+            <PencilLine size={17} />
           </button>
           <button 
             className={styles.deleteButton} 
             onClick={() => onDelete(row.id)}
+            title="Excluir categoria"
+            aria-label={`Excluir categoria ${row.name}`}
           >
-            <Trash2 size={16} />
+            <Trash size={17} />
           </button>
         </div>
       )

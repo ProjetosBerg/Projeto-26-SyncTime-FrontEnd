@@ -7,7 +7,7 @@ import {
   CheckCheck,
   ExternalLink,
   Filter,
-  Trash2,
+  Trash,
   X
 } from 'lucide-react';
 import { useHistory } from 'react-router-dom';
@@ -544,7 +544,7 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
                 className={styles.clearButton}
                 disabled={clearingRead}
               >
-                <Trash2 className={styles.trashIcon} />
+                <Trash className={styles.trashIcon} />
                 {clearingRead ? 'Limpando...' : 'Limpar'}
               </button>
             )}
@@ -649,7 +649,7 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
                           await deleteNotification(notification.id);
                         }}
                       >
-                        <Trash2 className={styles.trashIconSmall} />
+                        <Trash className={styles.trashIconSmall} />
                       </button>
                     </div>
                   </div>

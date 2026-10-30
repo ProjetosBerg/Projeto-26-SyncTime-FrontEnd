@@ -6,10 +6,10 @@ import {
   CircleAlert,
   Flag,
   LoaderCircle,
-  Pencil,
+  PencilLine,
   Plus,
   RefreshCw,
-  Trash2,
+  Trash,
   X
 } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
@@ -245,7 +245,7 @@ const Goals = () => {
                       onClick={() => openEdit(goal)}
                       aria-label={`Editar meta ${goal.title}`}
                     >
-                      <Pencil size={17} />
+                      <PencilLine size={18} />
                     </button>
                     <button
                       type="button"
@@ -256,7 +256,7 @@ const Goals = () => {
                       {deletingId === goal.id ? (
                         <LoaderCircle className={styles.spinner} size={17} />
                       ) : (
-                        <Trash2 size={17} />
+                        <Trash size={18} />
                       )}
                     </button>
                   </div>

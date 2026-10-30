@@ -15,6 +15,8 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
           boxShadow: state.isFocused ? '0 0 0 3px rgba(99, 102, 241, 0.2)' : 'none',
           transition: 'all 0.3s ease',
           minHeight: '50px',
+          borderRadius: '12px',
+          borderWidth: '1px',
           '&:hover': {
             borderColor: '#6366f1'
           }
@@ -22,6 +24,11 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
         input: (base) => ({
           ...base,
           color: '#f3f4f6'
+        }),
+        valueContainer: (base) => ({
+          ...base,
+          padding: '4px 12px',
+          gap: '4px'
         }),
         placeholder: (base) => ({
           ...base,
@@ -34,7 +41,7 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
         multiValue: (base) => ({
           ...base,
           backgroundColor: '#374151',
-          borderRadius: '4px'
+          borderRadius: '8px'
         }),
         multiValueLabel: (base) => ({
           ...base,
@@ -56,7 +63,9 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
           backgroundColor: '#1f2937',
           color: '#f3f4f6',
           border: '1px solid #374151',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+          borderRadius: '12px',
+          overflow: 'hidden',
+          boxShadow: '0 16px 38px rgba(0, 0, 0, 0.32)'
         }),
         menuList: (base) => ({
           ...base,
@@ -81,6 +90,7 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
             : '#1f2937',
           color: state.isSelected ? '#ffffff' : '#f3f4f6',
           cursor: 'pointer',
+          padding: '10px 12px',
           transition: 'all 0.2s ease',
           '&:hover': {
             backgroundColor: '#2a2a2a',
@@ -89,7 +99,7 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
         }),
         indicatorSeparator: (base) => ({
           ...base,
-          backgroundColor: '#374151'
+          display: 'none'
         }),
         dropdownIndicator: (base, state) => ({
           ...base,
@@ -114,6 +124,8 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
         boxShadow: state.isFocused ? '0 0 0 3px rgba(99, 102, 241, 0.1)' : 'none',
         transition: 'all 0.3s ease',
         minHeight: '50px',
+        borderRadius: '12px',
+        borderWidth: '1px',
         '&:hover': {
           borderColor: '#6366f1'
         }
@@ -121,6 +133,11 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
       input: (base) => ({
         ...base,
         color: '#1f2937'
+      }),
+      valueContainer: (base) => ({
+        ...base,
+        padding: '4px 12px',
+        gap: '4px'
       }),
       placeholder: (base) => ({
         ...base,
@@ -133,7 +150,7 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
       multiValue: (base) => ({
         ...base,
         backgroundColor: '#e0e7ff',
-        borderRadius: '4px'
+        borderRadius: '8px'
       }),
       multiValueLabel: (base) => ({
         ...base,
@@ -155,7 +172,9 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
         backgroundColor: 'white',
         color: '#1f2937',
         border: '1px solid #dee2e6',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: '0 16px 38px rgba(15, 23, 42, 0.14)'
       }),
       menuList: (base) => ({
         ...base,
@@ -170,6 +189,7 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
           : 'white',
         color: state.isSelected ? '#ffffff' : '#1f2937',
         cursor: 'pointer',
+        padding: '10px 12px',
         transition: 'all 0.2s ease',
         '&:hover': {
           backgroundColor: '#f3f4f6',
@@ -178,7 +198,7 @@ const MultiSelect = ({ label, options, value, onChange, ...props }) => {
       }),
       indicatorSeparator: (base) => ({
         ...base,
-        backgroundColor: '#dee2e6'
+        display: 'none'
       }),
       dropdownIndicator: (base, state) => ({
         ...base,
