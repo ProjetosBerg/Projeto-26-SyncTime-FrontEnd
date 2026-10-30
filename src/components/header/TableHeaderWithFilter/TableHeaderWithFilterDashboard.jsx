@@ -1,13 +1,21 @@
-import { useState, useRef, useEffect } from 'react';
-import { Filter, X, Plus, ChevronDown, Check, RotateCcw, Download } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Filter,
+  X,
+  Plus,
+  ChevronDown,
+  Check,
+  RotateCcw,
+  Download
+} from 'lucide-react';
 import styles from './TableHeaderWithFilter.module.css';
 import { useTheme } from '../../../hooks/useTheme';
 import { useEmphasisColor } from '../../../hooks/useEmphasisColor';
 import pdfImage from '../../../assets/pdf.png';
 
-const TableHeaderWithFilterDashboard = ({ 
-  title, 
-  columns = [], 
+const TableHeaderWithFilterDashboard = ({
+  title,
+  columns = [],
   onFiltersChange,
   showDisabledToggle = false,
   showDisabled = false,
@@ -19,13 +27,18 @@ const TableHeaderWithFilterDashboard = ({
   const { emphasisColor } = useEmphasisColor();
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
-  const [filters, setFilters] = useState([]); 
-  const [draftFilters, setDraftFilters] = useState([]); 
+  const [filters, setFilters] = useState([]);
+  const [draftFilters, setDraftFilters] = useState([]);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const panelRef = useRef(null);
   const exportRef = useRef(null);
 
   const accentColor = emphasisColor || '#0ea5e9';
+
+  const handleCancel = useCallback(() => {
+    setDraftFilters([...filters]);
+    setShowFilterPanel(false);
+  }, [filters]);
 
   // Operadores normais (para text, number, date)
   const operators = {
@@ -43,13 +56,21 @@ const TableHeaderWithFilterDashboard = ({
       { value: 'lte', label: 'Menor ou igual' },
       { value: 'between', label: 'Entre' }
     ],
-    date:[
-      { value: 'equals', label: 'É igual a' },
-    ]
+    date: [{ value: 'equals', label: 'É igual a' }]
   };
 
   const exportFormats = [
-    { value: 'pdf', label: 'PDF', icon: <img src={pdfImage} alt="PDF" style={{ width: '16px', height: '16px' }} /> }
+    {
+      value: 'pdf',
+      label: 'PDF',
+      icon: (
+        <img
+          src={pdfImage}
+          alt="PDF"
+          style={{ width: '16px', height: '16px' }}
+        />
+      )
+    }
   ];
 
   const addAlpha = (color, alpha) => {
@@ -77,11 +98,11 @@ const TableHeaderWithFilterDashboard = ({
     }
 
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFilterPanel, showExportDropdown]);
+  }, [handleCancel, showFilterPanel, showExportDropdown]);
 
   useEffect(() => {
-    const activeCount = filters.filter(f => 
-      f.value && f.value.toString().trim() !== ''
+    const activeCount = filters.filter(
+      (f) => f.value && f.value.toString().trim() !== ''
     ).length;
     setActiveFiltersCount(activeCount);
   }, [filters]);
@@ -93,18 +114,14 @@ const TableHeaderWithFilterDashboard = ({
   }, [showFilterPanel, filters]);
 
   const handleApply = () => {
-    const cleanedFilters = draftFilters.filter(f => {
+    const cleanedFilters = draftFilters.filter((f) => {
       if (!f.value || f.value.toString().trim() === '') return false;
-      if (f.operator === 'between' && (!f.value2 || f.value2.trim() === '')) return false;
+      if (f.operator === 'between' && (!f.value2 || f.value2.trim() === ''))
+        return false;
       return true;
     });
     setFilters(cleanedFilters);
     onFiltersChange?.(cleanedFilters);
-    setShowFilterPanel(false);
-  };
-
-  const handleCancel = () => {
-    setDraftFilters([...filters]);
     setShowFilterPanel(false);
   };
 
@@ -113,7 +130,10 @@ const TableHeaderWithFilterDashboard = ({
     const newFilter = {
       id: Date.now(),
       column: firstCol?.id || '',
-      operator: firstCol?.type === 'selectSimple' ? 'equals' : operators[firstCol?.type || 'text'][0].value,
+      operator:
+        firstCol?.type === 'selectSimple'
+          ? 'equals'
+          : operators[firstCol?.type || 'text'][0].value,
       value: '',
       value2: ''
     };
@@ -121,32 +141,38 @@ const TableHeaderWithFilterDashboard = ({
   };
 
   const removeFilter = (id) => {
-    setDraftFilters(draftFilters.filter(f => f.id !== id));
+    setDraftFilters(draftFilters.filter((f) => f.id !== id));
   };
 
   const updateFilter = (id, field, value) => {
-    setDraftFilters(draftFilters.map(f => {
-      if (f.id === id) {
-        const updated = { ...f, [field]: value };
-        
-        if (field === 'column') {
-          const column = columns.find(col => col.id === value);
-          updated.operator = column?.type === 'selectSimple' ? 'equals' : operators[column?.type || 'text'][0].value;
-          updated.value = '';
-          updated.value2 = '';
+    setDraftFilters(
+      draftFilters.map((f) => {
+        if (f.id === id) {
+          const updated = { ...f, [field]: value };
+
+          if (field === 'column') {
+            const column = columns.find((col) => col.id === value);
+            updated.operator =
+              column?.type === 'selectSimple'
+                ? 'equals'
+                : operators[column?.type || 'text'][0].value;
+            updated.value = '';
+            updated.value2 = '';
+          }
+
+          return updated;
         }
-        
-        return updated;
-      }
-      return f;
-    }));
+        return f;
+      })
+    );
   };
 
   const clearAllFilters = () => {
     setDraftFilters([]);
   };
 
-  const hasDraftChanges = JSON.stringify(draftFilters) !== JSON.stringify(filters);
+  const hasDraftChanges =
+    JSON.stringify(draftFilters) !== JSON.stringify(filters);
 
   const handleExportClick = (format) => {
     onExport?.(format);
@@ -154,9 +180,15 @@ const TableHeaderWithFilterDashboard = ({
   };
 
   return (
-    <div className={`${styles.headerContainer} ${styles[theme]}`}>
-      <h2 className={styles.headerTitle}>{title}</h2>
-      
+    <div
+      className={`${styles.headerContainer} ${styles[theme]}`}
+      style={{ '--accent-color': accentColor }}
+    >
+      <div className={styles.headerHeading}>
+        <span>Central de análises</span>
+        <h2 className={styles.headerTitle}>{title}</h2>
+      </div>
+
       <div className={styles.headerActions}>
         <div className={styles.filterContainer} ref={panelRef}>
           <button
@@ -164,15 +196,18 @@ const TableHeaderWithFilterDashboard = ({
             onClick={() => setShowFilterPanel(!showFilterPanel)}
             style={{
               '--focus-border-color': accentColor,
-              '--focus-shadow-color': addAlpha(accentColor, theme === 'dark' ? 0.2 : 0.1),
+              '--focus-shadow-color': addAlpha(
+                accentColor,
+                theme === 'dark' ? 0.2 : 0.1
+              ),
               '--accent-color': accentColor
             }}
           >
             <Filter size={18} className={styles.filterIcon} />
             Filtros
-            <ChevronDown 
-              size={16} 
-              className={`${styles.chevronIcon} ${showFilterPanel ? styles.rotated : ''}`} 
+            <ChevronDown
+              size={16}
+              className={`${styles.chevronIcon} ${showFilterPanel ? styles.rotated : ''}`}
             />
             {activeFiltersCount > 0 && (
               <span className={styles.filterBadge}>{activeFiltersCount}</span>
@@ -183,14 +218,23 @@ const TableHeaderWithFilterDashboard = ({
             <div className={styles.filterPanel}>
               <div className={styles.filterHeader}>
                 <div className={styles.filterCount}>
-                  <Filter size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                  {draftFilters.length} {draftFilters.length === 1 ? 'Filtro' : 'Filtros'}
+                  <Filter
+                    size={16}
+                    style={{ display: 'inline', marginRight: '6px' }}
+                  />
+                  {draftFilters.length}{' '}
+                  {draftFilters.length === 1 ? 'Filtro' : 'Filtros'}
                   {hasDraftChanges && (
-                    <span className={styles.draftIndicator}>(não aplicado)</span>
+                    <span className={styles.draftIndicator}>
+                      (não aplicado)
+                    </span>
                   )}
                 </div>
                 {draftFilters.length > 0 && (
-                  <button className={styles.clearAllButton} onClick={clearAllFilters}>
+                  <button
+                    className={styles.clearAllButton}
+                    onClick={clearAllFilters}
+                  >
                     Limpar tudo
                   </button>
                 )}
@@ -207,22 +251,33 @@ const TableHeaderWithFilterDashboard = ({
                   </div>
                 ) : (
                   <div className={styles.filtersList}>
-                    {draftFilters.map(filter => {
-                      const column = columns.find(col => col.id === filter.column);
+                    {draftFilters.map((filter) => {
+                      const column = columns.find(
+                        (col) => col.id === filter.column
+                      );
                       const columnType = column?.type || 'text';
                       const isSelectSimple = columnType === 'selectSimple';
                       const isBetween = filter.operator === 'between';
 
                       return (
-                        <div key={filter.id} className={`${styles.filterItem} ${isBetween || isSelectSimple ? styles.fullWidth : ''}`}>
+                        <div
+                          key={filter.id}
+                          className={`${styles.filterItem} ${isBetween || isSelectSimple ? styles.fullWidth : ''}`}
+                        >
                           {/* Linha 1: Coluna + Operador (só se não for selectSimple) */}
                           <div className={styles.filterRow}>
                             <select
                               className={styles.filterSelect}
                               value={filter.column}
-                              onChange={(e) => updateFilter(filter.id, 'column', e.target.value)}
+                              onChange={(e) =>
+                                updateFilter(
+                                  filter.id,
+                                  'column',
+                                  e.target.value
+                                )
+                              }
                             >
-                              {columns.map(col => (
+                              {columns.map((col) => (
                                 <option key={col.id} value={col.id}>
                                   {col.label}
                                 </option>
@@ -233,9 +288,15 @@ const TableHeaderWithFilterDashboard = ({
                               <select
                                 className={styles.filterSelect}
                                 value={filter.operator}
-                                onChange={(e) => updateFilter(filter.id, 'operator', e.target.value)}
+                                onChange={(e) =>
+                                  updateFilter(
+                                    filter.id,
+                                    'operator',
+                                    e.target.value
+                                  )
+                                }
                               >
-                                {operators[columnType]?.map(op => (
+                                {operators[columnType]?.map((op) => (
                                   <option key={op.value} value={op.value}>
                                     {op.label}
                                   </option>
@@ -250,7 +311,13 @@ const TableHeaderWithFilterDashboard = ({
                               <select
                                 className={styles.filterInput}
                                 value={filter.value}
-                                onChange={(e) => updateFilter(filter.id, 'value', e.target.value)}
+                                onChange={(e) =>
+                                  updateFilter(
+                                    filter.id,
+                                    'value',
+                                    e.target.value
+                                  )
+                                }
                                 style={{ width: '100%' }}
                               >
                                 {column.options?.map((opt) => (
@@ -261,21 +328,47 @@ const TableHeaderWithFilterDashboard = ({
                               </select>
                             ) : (
                               <input
-                                type={columnType === 'date' ? 'date' : columnType === 'number' ? 'number' : 'text'}
+                                type={
+                                  columnType === 'date'
+                                    ? 'date'
+                                    : columnType === 'number'
+                                      ? 'number'
+                                      : 'text'
+                                }
                                 className={styles.filterInput}
-                                placeholder={isBetween ? 'Valor inicial' : 'Valor'}
+                                placeholder={
+                                  isBetween ? 'Valor inicial' : 'Valor'
+                                }
                                 value={filter.value}
-                                onChange={(e) => updateFilter(filter.id, 'value', e.target.value)}
+                                onChange={(e) =>
+                                  updateFilter(
+                                    filter.id,
+                                    'value',
+                                    e.target.value
+                                  )
+                                }
                               />
                             )}
 
                             {isBetween && (
                               <input
-                                type={columnType === 'date' ? 'date' : columnType === 'number' ? 'number' : 'text'}
+                                type={
+                                  columnType === 'date'
+                                    ? 'date'
+                                    : columnType === 'number'
+                                      ? 'number'
+                                      : 'text'
+                                }
                                 className={styles.filterInput}
                                 placeholder="Valor final"
                                 value={filter.value2}
-                                onChange={(e) => updateFilter(filter.id, 'value2', e.target.value)}
+                                onChange={(e) =>
+                                  updateFilter(
+                                    filter.id,
+                                    'value2',
+                                    e.target.value
+                                  )
+                                }
                               />
                             )}
 
@@ -293,8 +386,8 @@ const TableHeaderWithFilterDashboard = ({
                   </div>
                 )}
 
-                <button 
-                  className={styles.addFilterButton} 
+                <button
+                  className={styles.addFilterButton}
                   onClick={addFilter}
                   disabled={columns.length === 0}
                   style={{ '--accent-color': accentColor }}
@@ -312,12 +405,11 @@ const TableHeaderWithFilterDashboard = ({
                     <RotateCcw size={16} />
                     Cancelar
                   </button>
-                  <button
-                    className={styles.applyButton}
-                    onClick={handleApply}
-                  >
+                  <button className={styles.applyButton} onClick={handleApply}>
                     <Check size={16} />
-                    {draftFilters.length === 0 ? 'Limpar Filtros' : 'Aplicar Filtros'}
+                    {draftFilters.length === 0
+                      ? 'Limpar Filtros'
+                      : 'Aplicar Filtros'}
                   </button>
                 </div>
               </div>
@@ -334,15 +426,24 @@ const TableHeaderWithFilterDashboard = ({
             >
               <Download size={18} className={styles.exportIcon} />
               Exportar
-              <ChevronDown size={16} className={`${styles.chevronIcon} ${showExportDropdown ? styles.rotated : ''}`} />
+              <ChevronDown
+                size={16}
+                className={`${styles.chevronIcon} ${showExportDropdown ? styles.rotated : ''}`}
+              />
             </button>
 
             {showExportDropdown && (
               <div className={styles.exportDropdown}>
                 {exportFormats.map((fmt) => (
-                  <button key={fmt.value} className={styles.exportOption} onClick={() => handleExportClick(fmt.value)}>
+                  <button
+                    key={fmt.value}
+                    className={styles.exportOption}
+                    onClick={() => handleExportClick(fmt.value)}
+                  >
                     <span className={styles.exportOptionIcon}>{fmt.icon}</span>
-                    <span className={styles.exportOptionLabel}>{fmt.label}</span>
+                    <span className={styles.exportOptionLabel}>
+                      {fmt.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -352,7 +453,12 @@ const TableHeaderWithFilterDashboard = ({
 
         {showDisabledToggle && (
           <label className={styles.checkboxLabel}>
-            <input type="checkbox" checked={showDisabled} onChange={onToggleDisabled} className={styles.checkbox} />
+            <input
+              type="checkbox"
+              checked={showDisabled}
+              onChange={onToggleDisabled}
+              className={styles.checkbox}
+            />
             Mostrar desabilitados
           </label>
         )}

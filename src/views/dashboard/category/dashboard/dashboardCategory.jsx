@@ -1,5 +1,6 @@
 import styles from './dashboardCategory.module.css';
 import { useTheme } from './../../../../hooks/useTheme';
+import { useEmphasisColor } from './../../../../hooks/useEmphasisColor';
 import {
   forwardRef,
   lazy,
@@ -9,7 +10,17 @@ import {
   useRef,
   useState
 } from 'react';
-import { X, Plus } from 'lucide-react';
+import {
+  Activity,
+  BadgeDollarSign,
+  ChartNoAxesCombined,
+  Plus,
+  ReceiptText,
+  Sigma,
+  Sparkles,
+  Tags,
+  X
+} from 'lucide-react';
 import DashboardChart from './DashboardChart';
 
 const CustomChartModal = lazy(() => import('./modal/customChartModal'));
@@ -29,6 +40,7 @@ const DashboardCategory = forwardRef(
     ref
   ) => {
     const { theme } = useTheme();
+    const { emphasisColor } = useEmphasisColor();
 
     const registeredCharts = useRef(0);
     const totalExpectedCharts = useRef(0);
@@ -496,6 +508,7 @@ const DashboardCategory = forwardRef(
       return (
         <div
           className={`${styles.container} ${styles[theme]}`}
+          style={{ '--dashboard-accent': emphasisColor || '#3b82f6' }}
           aria-busy="true"
           aria-label="Carregando dashboard"
         >
@@ -544,54 +557,149 @@ const DashboardCategory = forwardRef(
     const formatCurrency = (value) =>
       `R$ ${Number(value).toFixed(2).replace('.', ',')}`;
     const formatNumber = (value) => Number(value).toLocaleString('pt-BR');
+    const periodLabel =
+      {
+        day: 'Diário',
+        week: 'Semanal',
+        month: 'Mensal',
+        year: 'Anual'
+      }[filters.groupBy] || 'Mensal';
 
     return (
-      <div ref={ref} className={`${styles.container} ${styles[theme]}`}>
-        <div className={styles.summaryGrid}>
-          <div className={`${styles.summaryCard} ${styles[theme]}`}>
-            <h3>Total de Transações</h3>
-            <p>{formatNumber(summary.totalTransactions)}</p>
+      <div
+        ref={ref}
+        className={`${styles.container} ${styles[theme]}`}
+        style={{ '--dashboard-accent': emphasisColor || '#3b82f6' }}
+      >
+        <section className={styles.dashboardHero}>
+          <div className={styles.heroGlow} aria-hidden="true" />
+          <div className={styles.heroContent}>
+            <span className={styles.heroEyebrow}>
+              <Sparkles size={15} /> Inteligência de produtividade
+            </span>
+            <h1>Visão clara do seu desempenho</h1>
+            <p>
+              Acompanhe categorias, transações e evolução em um painel criado
+              para transformar dados em decisões.
+            </p>
+          </div>
+          <div className={styles.heroStatus}>
+            <span className={styles.heroStatusIcon}>
+              <ChartNoAxesCombined size={26} />
+            </span>
+            <div>
+              <span>Período analisado</span>
+              <strong>{periodLabel}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.metricsSection}>
+          <div className={styles.summaryHeader}>
+            <div>
+              <span className={styles.sectionEyebrow}>Resumo executivo</span>
+              <h2>Indicadores principais</h2>
+            </div>
+            <button
+              onClick={handleOpenSummaryModal}
+              className={`${styles.addSummaryButton} ${styles[theme]}`}
+            >
+              <Plus size={18} />
+              Adicionar indicador
+            </button>
           </div>
 
-          {showFinancialMetrics && (
-            <>
-              <div className={`${styles.summaryCard} ${styles[theme]}`}>
-                <h3>Valor Total</h3>
-                <p>{formatCurrency(summary.totalAmount)}</p>
+          <div className={styles.summaryGrid}>
+            <article
+              className={`${styles.summaryCard} ${styles[theme]}`}
+              style={{ '--metric-accent': '#3b82f6' }}
+            >
+              <div className={styles.summaryCardTop}>
+                <span className={styles.summaryIcon}>
+                  <ReceiptText size={22} />
+                </span>
+                <span className={styles.summaryBadge}>Volume</span>
               </div>
-              <div className={`${styles.summaryCard} ${styles[theme]}`}>
-                <h3>Média por Transação</h3>
-                <p>{formatCurrency(summary.averageTransactionAmount)}</p>
-              </div>
-            </>
-          )}
+              <h3>Total de transações</h3>
+              <p>{formatNumber(summary.totalTransactions)}</p>
+              <small>Movimentações no período</small>
+            </article>
 
-          <div className={`${styles.summaryCard} ${styles[theme]}`}>
-            <h3>Categorias Ativas</h3>
-            <p>{summary.totalCategories}</p>
-          </div>
-
-          {(data.customChartsData?.customFields || []).map(
-            (field, idx) =>
-              selectedCustomSummaries.includes(field.label) &&
-              field.totalSum > 0 && (
-                <div
-                  key={idx}
+            {showFinancialMetrics && (
+              <>
+                <article
                   className={`${styles.summaryCard} ${styles[theme]}`}
+                  style={{ '--metric-accent': '#10b981' }}
                 >
-                  <h3>Total de {field.label}</h3>
-                  <p>{formatNumber(field.totalSum)}</p>
-                </div>
-              )
-          )}
-        </div>
-        <button
-          onClick={handleOpenSummaryModal}
-          className={`${styles.addSummaryButton} ${styles[theme]}`}
-        >
-          <Plus size={18} />
-          Adicionar Totais Custom
-        </button>
+                  <div className={styles.summaryCardTop}>
+                    <span className={styles.summaryIcon}>
+                      <BadgeDollarSign size={22} />
+                    </span>
+                    <span className={styles.summaryBadge}>Financeiro</span>
+                  </div>
+                  <h3>Valor total</h3>
+                  <p>{formatCurrency(summary.totalAmount)}</p>
+                  <small>Somatório das transações</small>
+                </article>
+                <article
+                  className={`${styles.summaryCard} ${styles[theme]}`}
+                  style={{ '--metric-accent': '#8b5cf6' }}
+                >
+                  <div className={styles.summaryCardTop}>
+                    <span className={styles.summaryIcon}>
+                      <Activity size={22} />
+                    </span>
+                    <span className={styles.summaryBadge}>Média</span>
+                  </div>
+                  <h3>Média por transação</h3>
+                  <p>{formatCurrency(summary.averageTransactionAmount)}</p>
+                  <small>Valor médio por movimentação</small>
+                </article>
+              </>
+            )}
+
+            <article
+              className={`${styles.summaryCard} ${styles[theme]}`}
+              style={{ '--metric-accent': '#f59e0b' }}
+            >
+              <div className={styles.summaryCardTop}>
+                <span className={styles.summaryIcon}>
+                  <Tags size={22} />
+                </span>
+                <span className={styles.summaryBadge}>Estrutura</span>
+              </div>
+              <h3>Categorias ativas</h3>
+              <p>{formatNumber(summary.totalCategories)}</p>
+              <small>Categorias com registros</small>
+            </article>
+
+            {(data.customChartsData?.customFields || []).map(
+              (field, index) =>
+                selectedCustomSummaries.includes(field.label) &&
+                field.totalSum > 0 && (
+                  <article
+                    key={field.label}
+                    className={`${styles.summaryCard} ${styles[theme]}`}
+                    style={{
+                      '--metric-accent': ['#06b6d4', '#ec4899', '#6366f1'][
+                        index % 3
+                      ]
+                    }}
+                  >
+                    <div className={styles.summaryCardTop}>
+                      <span className={styles.summaryIcon}>
+                        <Sigma size={22} />
+                      </span>
+                      <span className={styles.summaryBadge}>Customizado</span>
+                    </div>
+                    <h3>Total de {field.label}</h3>
+                    <p>{formatNumber(field.totalSum)}</p>
+                    <small>Indicador personalizado</small>
+                  </article>
+                )
+            )}
+          </div>
+        </section>
 
         {/* === 1. Insights de Categorias === */}
         <div className={`${styles.section} ${styles[theme]}`}>

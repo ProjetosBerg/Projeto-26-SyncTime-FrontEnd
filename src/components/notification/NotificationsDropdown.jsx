@@ -29,6 +29,8 @@ import {
   useMemorizeFilters
 } from '../../hooks/useMemorizeInputsFilters';
 
+const MAX_NOTIFICATIONS_PER_REQUEST = 100;
+
 const formatRelativeTime = (dateStr) => {
   const date = new Date(dateStr);
   const diff = Date.now() - date.getTime();
@@ -202,25 +204,57 @@ const NotificationsDropdown = ({ onClose, onNotificationChange }) => {
       .map((notification) => notification.id);
     if (unreadIds.length === 0) return;
 
+    const markedIds = [];
+    let failedRequest = null;
+
     try {
       setMarkingAll(true);
-      await ServiceNotification.markReadNotification({ ids: unreadIds });
-      const unreadSet = new Set(unreadIds);
-      setNotifications((currentNotifications) =>
-        currentNotifications.map((notification) =>
-          unreadSet.has(notification.id)
-            ? { ...notification, read: true }
-            : notification
-        )
-      );
-      onNotificationChange?.(-unreadIds.length);
-      setFlashMessage(
-        'Todas as notificações foram marcadas como lidas',
-        'success'
-      );
-    } catch (error) {
-      console.error('Erro ao marcar todas como lidas:', error);
-      setFlashMessage('Erro ao marcar notificações como lidas', 'error');
+
+      for (
+        let index = 0;
+        index < unreadIds.length;
+        index += MAX_NOTIFICATIONS_PER_REQUEST
+      ) {
+        const batch = unreadIds.slice(
+          index,
+          index + MAX_NOTIFICATIONS_PER_REQUEST
+        );
+
+        try {
+          await ServiceNotification.markReadNotification({ ids: batch });
+          markedIds.push(...batch);
+        } catch (error) {
+          failedRequest = error;
+          break;
+        }
+      }
+
+      if (markedIds.length > 0) {
+        const markedSet = new Set(markedIds);
+        setNotifications((currentNotifications) =>
+          currentNotifications.map((notification) =>
+            markedSet.has(notification.id)
+              ? { ...notification, read: true }
+              : notification
+          )
+        );
+        onNotificationChange?.(-markedIds.length);
+      }
+
+      if (failedRequest) {
+        console.error('Erro ao marcar lote de notificações:', failedRequest);
+        setFlashMessage(
+          markedIds.length > 0
+            ? `${markedIds.length} notificações foram marcadas. Tente novamente para concluir as restantes.`
+            : 'Erro ao marcar notificações como lidas',
+          'error'
+        );
+      } else {
+        setFlashMessage(
+          'Todas as notificações foram marcadas como lidas',
+          'success'
+        );
+      }
     } finally {
       setMarkingAll(false);
     }
