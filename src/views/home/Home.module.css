@@ -202,56 +202,100 @@
 /* CABEÇALHO DOS CARDS */
 .cardHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 1rem;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
+}
+
+.cardHeader .cardTitle {
+  min-height: 42px;
+  margin: 0;
 }
 
 /* FILTRO */
 .filterContainer {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  align-self: flex-start;
+  flex: 0 0 auto;
+  gap: 0.375rem;
+  margin-left: auto;
+  padding: 0.3rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.container.dark .filterContainer {
+  border-color: #334155;
+  background-color: rgba(15, 23, 42, 0.58);
+  box-shadow: 0 6px 16px rgba(2, 6, 23, 0.16);
+}
+
+.container.light .filterContainer {
+  border-color: #e2e8f0;
+  background-color: #f8fafc;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
 }
 
 .filterIcon {
   width: 1rem;
   height: 1rem;
+  box-sizing: content-box;
+  padding: 0.5rem;
+  border-radius: 0.55rem;
   transition: color 0.3s ease;
 }
 
 .container.dark .filterIcon {
-  color: #9ca3af;
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
 }
 
 .container.light .filterIcon {
-  color: #9ca3af;
+  background-color: #eaf2ff;
+  color: #2563eb;
 }
 
 .filterSelect {
+  min-width: 118px;
+  min-height: 38px;
+  border: 1px solid transparent;
   font-size: 0.875rem;
-  border-radius: 0.5rem;
-  padding: 0.25rem 0.5rem;
+  font-weight: 500;
+  text-align: left;
+  text-align-last: left;
+  border-radius: 0.55rem;
+  padding: 0.5rem 0.7rem;
   outline: none;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filterSelect:last-child:not(:first-child) {
+  min-width: 84px;
 }
 
 .container.dark .filterSelect {
-  border: 1px solid #374151;
-  background-color: #111827;
+  border-color: #334155;
+  background-color: #111c2f;
   color: #f3f4f6;
 }
 
 .container.light .filterSelect {
-  border: 1px solid #d1d5db;
+  border-color: #dbe3ef;
   background-color: white;
   color: #1f2937;
 }
 
 .filterSelect:focus {
-  outline: 2px solid var(--focus-color, #9333ea);
-  outline-offset: 2px;
+  border-color: var(--focus-color, #3b82f6);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-color, #3b82f6) 20%, transparent);
+}
+
+.filterSelect:hover {
+  border-color: color-mix(in srgb, var(--focus-color, #3b82f6) 46%, transparent);
 }
 
 /* NOTIFICAÇÕES */
@@ -607,9 +651,9 @@
   .title { font-size: 1.4rem; margin-bottom: 1.25rem; }
   .cardTitle { font-size: 1.1rem; }
   .weatherCard, .inboxCard, .presenceCard { padding: 1.25rem; }
-  .cardHeader { flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .filterContainer { width: 100%; justify-content: flex-start; }
-  .filterSelect { flex: 1; min-width: 100px; }
+  .cardHeader { gap: 0.75rem; }
+  .filterContainer { width: auto; }
+  .filterSelect { min-width: 108px; }
   .weatherMain { flex-direction: column; align-items: flex-start; gap: 1rem; }
   .statsGrid { grid-template-columns: 1fr; gap: 0.75rem; }
   .progressBar { height: 1.75rem; }
@@ -623,6 +667,10 @@
   .grid { gap: 1rem; }
   .weatherCard, .inboxCard, .presenceCard { padding: 1rem; border-radius: 0.75rem; }
   .cardTitle { font-size: 1rem; }
+  .cardHeader { flex-direction: column; align-items: stretch; }
+  .cardHeader .cardTitle { min-height: auto; }
+  .filterContainer { width: 100%; margin-left: 0; }
+  .filterSelect { flex: 1; min-width: 0; }
   .icon, .iconPurple, .iconGreen { width: 1rem; height: 1rem; }
   .temperature { font-size: 2rem; }
   .condition { font-size: 1rem; }
@@ -649,7 +697,8 @@
   .title { font-size: 1.125rem; }
   .cardTitle { font-size: 0.95rem; }
   .temperature { font-size: 1.75rem; }
-  .filterContainer { flex-wrap: wrap; gap: 0.375rem; }
+  .filterContainer { gap: 0.25rem; }
+  .filterIcon { padding: 0.4rem; }
   .filterSelect { font-size: 0.75rem; padding: 0.25rem 0.375rem; }
   .notificationTitle { font-size: 0.75rem; }
   .dayLabel { width: 2rem; font-size: 0.75rem; }

@@ -388,6 +388,7 @@ const Home = () => {
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
                   className={styles.filterSelect}
+                  aria-label="Filtrar caixa de entrada por categoria"
                   style={{ '--focus-color': emphasisColor || '#9333ea' }}
                 >
                   <option value="todos">Todos</option>
@@ -446,6 +447,7 @@ const Home = () => {
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
                   className={styles.filterSelect}
+                  aria-label="Selecionar mês do gráfico de presença"
                   style={{ '--focus-color': emphasisColor || '#9333ea' }}
                 >
                   {months.map((m) => (
@@ -458,6 +460,7 @@ const Home = () => {
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
                   className={styles.filterSelect}
+                  aria-label="Selecionar ano do gráfico de presença"
                   style={{ '--focus-color': emphasisColor || '#9333ea' }}
                 >
                   {years.map((y) => (
